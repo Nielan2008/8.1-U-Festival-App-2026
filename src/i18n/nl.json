@@ -1,0 +1,48 @@
+{
+  "nav": {
+    "home": "Home",
+    "info": "Info",
+    "schedule": "Schema",
+    "map": "Map"
+  },
+  "hero": {
+    "subtitle": "15–16 augustus 2026 · Strijkviertel, Utrecht"
+  },
+  "buttons": {
+    "learnMore": "Lees meer",
+    "close": "Sluiten",
+    "showDetails": "Details",
+    "enableNotifications": "Meldingen inschakelen"
+  },
+  "theme": {
+    "light": "Licht",
+    "dark": "Donker"
+  },
+  "schedule": {
+    "title": "Blokkenschema",
+    "tabs": {
+      "sat": "Zaterdag",
+      "sun": "Zondag"
+    },
+    "favourite": "Favoriet",
+    "noEvents": "Geen evenementen in deze fase.",
+    "currentLocation": "Huidige positie",
+    "nextUp": "Volgende"
+  },
+  "map": {
+    "title": "Festival kaart",
+    "locationAllowed": "GPS-locatie gedeeld",
+    "locationDenied": "Locatie niet beschikbaar"
+  },
+  "info": {
+    "title": "Praktische informatie",
+    "sections": {
+      "general": "Algemeen & Contact",
+      "address": "Adres & Datums",
+      "travel": "Bereikbaarheid",
+      "lockers": "Kluisjes",
+      "faq": "FAQ",
+      "golden": "Golden-GLU"
+    }
+  }
+}

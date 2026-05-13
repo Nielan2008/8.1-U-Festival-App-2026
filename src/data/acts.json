@@ -1,0 +1,79 @@
+{
+  "armin": {
+    "name": "Armin van Buuren",
+    "tagline": "Trance architect and mainstage energy.",
+    "description": "Armin van Buuren brengt een uitgebreide set met uplifting trance en festival anthems om de eerste dag te openen.",
+    "youtube": "https://www.youtube.com/watch?v=1jYuGzX6W3Y",
+    "image": "https://via.placeholder.com/400x225?text=Armin"
+  },
+  "martin": {
+    "name": "Martin Garrix",
+    "tagline": "Pop-EDM superstar en nachtelijke headliner.",
+    "description": "Martin Garrix bouwt een energieke show met zijn grootste hits, speciaal voor de zonsondergang op de Ponton.",
+    "youtube": "https://www.youtube.com/watch?v=QJz7B7jhBWU",
+    "image": "https://via.placeholder.com/400x225?text=Garrix"
+  },
+  "kensington": {
+    "name": "Kensington",
+    "tagline": "Nederlandse rockband met een sterke live performance.",
+    "description": "Kensington brengt emotionele gitaarwanden en krachtige vibes tussen de grote headliners.",
+    "youtube": "https://www.youtube.com/watch?v=lgw_4m6eND0",
+    "image": "https://via.placeholder.com/400x225?text=Kensington"
+  },
+  "within": {
+    "name": "Within Temptation",
+    "tagline": "Symfonische rock met bombastische impact.",
+    "description": "Within Temptation neemt je mee in een dramatische set met orkestrale melodieën en krachtige zang.",
+    "youtube": "https://www.youtube.com/watch?v=FJfFZqTlWrQ",
+    "image": "https://via.placeholder.com/400x225?text=Within"
+  },
+  "destaat": {
+    "name": "De Staat",
+    "tagline": "Alternatieve rock met een eigenzinnige productie.",
+    "description": "De Staat levert een intense live show vol ritme, riff en eigenzinnige energie.",
+    "youtube": "https://www.youtube.com/watch?v=YHfR2mO9T5I",
+    "image": "https://via.placeholder.com/400x225?text=De+Staat"
+  },
+  "chef": {
+    "name": "Chef'Special",
+    "tagline": "Poprock met feelgood grooves.",
+    "description": "Chef'Special serveert een vrolijke show vol aanstekelijke melodieën en een festivalvriendelijke sfeer.",
+    "youtube": "https://www.youtube.com/watch?v=qMbDYYn6C80",
+    "image": "https://via.placeholder.com/400x225?text=Chef'Special"
+  },
+  "navarone": {
+    "name": "Navarone",
+    "tagline": "Indierock met grote refreinen.",
+    "description": "Navarone brengt een stevige live presentatie met melodieuze rock en heel veel energie.",
+    "youtube": "https://www.youtube.com/watch?v=0uKyEtdH8uo",
+    "image": "https://via.placeholder.com/400x225?text=Navarone"
+  },
+  "dotan": {
+    "name": "Dotan",
+    "tagline": "Singer-songwriter met intieme hits.",
+    "description": "Dotan zingt liedjes over liefde en avontuur, een rustige afsluiting tussen de grote shows.",
+    "youtube": "https://www.youtube.com/watch?v=ZEXXi1AAaJg",
+    "image": "https://via.placeholder.com/400x225?text=Dotan"
+  },
+  "eefje": {
+    "name": "Eefje de Visser",
+    "tagline": "Dromerige pop met Nederlandstalige finesse.",
+    "description": "Eefje de Visser schept een sfeervolle avondshow vol zachte elektronica en poëtische teksten.",
+    "youtube": "https://www.youtube.com/watch?v=YqNXwdWI3-c",
+    "image": "https://via.placeholder.com/400x225?text=Eefje"
+  },
+  "froukje": {
+    "name": "Froukje",
+    "tagline": "Nieuwe popster met frisse energie.",
+    "description": "Froukje staat voor meeslepende popmuziek met catchy hooks en festivalmomenten.",
+    "youtube": "https://www.youtube.com/watch?v=Z4FsYCZiPXI",
+    "image": "https://via.placeholder.com/400x225?text=Froukje"
+  },
+  "spinvis": {
+    "name": "Spinvis",
+    "tagline": "Verhalende liedjes en warme soundscapes.",
+    "description": "Spinvis creëert een intieme maar groots klinkende afsluiter met poëtische songs.",
+    "youtube": "https://www.youtube.com/watch?v=7lUo2zv-CX0",
+    "image": "https://via.placeholder.com/400x225?text=Spinvis"
+  }
+}

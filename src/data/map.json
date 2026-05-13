@@ -1,0 +1,8 @@
+{
+  "locations": [
+    { "id": "Ponton", "label": "Ponton", "lat": 51.9860, "lng": 5.0570, "info": "Main stage by the water." },
+    { "id": "The Lake", "label": "The Lake", "lat": 51.9840, "lng": 5.0525, "info": "Talent stage near the lake." },
+    { "id": "The Club", "label": "The Club", "lat": 51.9855, "lng": 5.0520, "info": "Indoor club programming." },
+    { "id": "Hangar", "label": "Hangar", "lat": 51.9835, "lng": 5.0555, "info": "Late-night DJ stage." }
+  ]
+}
