@@ -32,7 +32,12 @@
   "map": {
     "title": "Festival map",
     "locationAllowed": "GPS location shared",
-    "locationDenied": "Location not available"
+    "locationDenied": "Location not available",
+    "centerButton": "Center on me",
+    "permissionDenied": "Location permission denied.",
+    "positionUnavailable": "Location currently unavailable.",
+    "geolocationUnsupported": "Geolocation is not supported in this browser.",
+    "currentAct": "Current act"
   },
   "info": {
     "title": "Practical information",
@@ -44,5 +49,9 @@
       "faq": "FAQ",
       "golden": "Golden-GLU"
     }
+  },
+  "home": {
+    "welcomeTitle": "Welcome to ❤️U Festival",
+    "welcomeText": "16 hours of music, art and food in Utrecht on 15–16 August 2026."
   }
 }

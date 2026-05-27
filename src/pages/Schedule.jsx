@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import scheduleData from '../data/schedule.json';
 import actsData from '../data/acts.json';
+import { loadData, localize } from '../utils/dataStore.js';
 import ScheduleBlock from '../components/ScheduleBlock.jsx';
 import ActModal from '../components/ActModal.jsx';
 
@@ -12,13 +13,13 @@ const timeLabels = Array.from({ length: 56 }, (_, index) => {
   return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
 });
 
-function getActDetails(stage, act) {
-  const details = actsData[act.id] || {};
+function getActDetails(stage, act, acts, lang) {
+  const details = acts[act.id] || {};
   return {
     ...act,
     name: details.name || act.title,
-    tagline: details.tagline || '',
-    description: details.description || '',
+    tagline: localize(details.tagline, lang) || '',
+    description: localize(details.description, lang) || '',
     youtube: details.youtube || 'https://www.youtube.com/watch?v=ZEXXi1AAaJg',
     image: details.image || '',
     stage
@@ -31,22 +32,27 @@ function parseMinutes(time) {
 }
 
 export default function Schedule() {
-  const { t } = useTranslation();
+  const { i18n, t } = useTranslation();
   const [day, setDay] = useState('sat');
   const [selectedAct, setSelectedAct] = useState(null);
+  const [schedule, setSchedule] = useState(scheduleData);
   const [favourites, setFavourites] = useState(() => {
     const saved = window.localStorage.getItem('loveu-favourites');
     return saved ? JSON.parse(saved) : [];
   });
   const [notificationsAllowed, setNotificationsAllowed] = useState(false);
 
-  const dayData = scheduleData[day] || [];
+  useEffect(() => {
+    loadData('schedule', scheduleData).then(setSchedule).catch(() => setSchedule(scheduleData));
+  }, []);
+
+  const dayData = schedule[day] || [];
   const blocks = useMemo(
     () => dayData.map((stage) => ({
       stage: stage.stage,
-      acts: stage.acts.map((act) => getActDetails(stage.stage, act))
+      acts: stage.acts.map((act) => getActDetails(stage.stage, act, actsData, i18n.language))
     })),
-    [dayData]
+    [dayData, i18n.language]
   );
 
   useEffect(() => {

@@ -1,0 +1,339 @@
+:root {
+  color-scheme: dark;
+  font-family: 'Sansation', sans-serif;
+  background: #070707;
+  color: #FFFFFF;
+  --color-accent: #F03228;
+  --color-secondary: #247BA0;
+  --color-info: #E3B505;
+  --surface: #121212;
+  --border: rgba(255,255,255,0.12);
+  --muted: #CCCCCC;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at top left, rgba(240,50,40,0.18), transparent 30%), #070707;
+  color: #FFFFFF;
+}
+
+a,
+button,
+input,
+textarea,
+select {
+  font-family: 'Sansation', sans-serif;
+}
+
+button,
+input[type="submit"],
+.cms-btn,
+.btn-secondary,
+.btn-danger {
+  background-color: #F03228;
+  color: #ffffff !important;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-family: 'Sansation', sans-serif;
+  font-weight: 300;
+  font-style: italic;
+  cursor: pointer;
+  transition: filter 0.2s;
+}
+
+button:hover,
+input[type="submit"]:hover,
+.cms-btn:hover,
+.btn-secondary:hover,
+.btn-danger:hover {
+  filter: brightness(1.1);
+}
+
+.btn-danger {
+  background-color: #c0392b;
+}
+
+.btn-secondary {
+  background-color: #247BA0;
+}
+
+.lang-btn,
+.lang-toggle button,
+.flag-button {
+  background-color: transparent;
+  color: #000000 !important;
+  border: 2px solid #000000;
+  border-radius: 12px;
+  padding: 8px 16px;
+  font-family: 'Sansation', sans-serif;
+  font-style: italic;
+  font-weight: 300;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.lang-btn.active,
+.lang-toggle button.active,
+.flag-button.active {
+  background-color: #F03228;
+  color: #ffffff !important;
+  border-color: #F03228;
+}
+
+.lang-btn:hover,
+.lang-toggle button:hover,
+.flag-button:hover {
+  filter: brightness(1.1);
+}
+
+.theme-toggle-btn,
+.theme-btn,
+.theme-button {
+  background-color: transparent;
+  border: 2px solid #000000;
+  border-radius: 12px;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: border-color 0.2s;
+  line-height: 1;
+  color: #000000;
+}
+
+.cms-lang-button,
+button.cms-lang-button,
+button.lang-button,
+button.language-button {
+  color: #000000;
+  background-color: rgba(255, 255, 255, 0.12);
+  border: 1px solid #000000;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+button.cms-lang-button:hover,
+button.lang-button:hover,
+button.language-button:hover {
+  background-color: rgba(255, 255, 255, 0.18);
+}
+
+body.dark-mode .cms-lang-button,
+body[data-theme='dark'] .cms-lang-button,
+html[data-theme='dark'] .cms-lang-button,
+body.dark-mode button.cms-lang-button,
+body[data-theme='dark'] button.cms-lang-button,
+html[data-theme='dark'] button.cms-lang-button,
+body.dark-mode button.lang-button,
+body[data-theme='dark'] button.lang-button,
+html[data-theme='dark'] button.lang-button,
+body.dark-mode button.language-button,
+body[data-theme='dark'] button.language-button,
+html[data-theme='dark'] button.language-button {
+  color: #FFFFFF;
+  border-color: #FFFFFF;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.cms-shell {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 1.25rem;
+}
+
+.cms-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.cms-logo {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.cms-tagline {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+}
+
+.cms-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.cms-nav-link {
+  padding: 0.8rem 1rem;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.05);
+  color: #FFFFFF;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.cms-nav-link.active,
+.cms-nav-link:hover {
+  background: rgba(240,50,40,0.9);
+}
+
+.logout-button {
+  justify-self: end;
+  align-self: center;
+  padding: 0.8rem 1rem;
+  border-radius: 16px;
+  background: rgba(36,123,160,0.95);
+  color: #FFFFFF;
+  text-decoration: none;
+}
+
+.cms-content {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.cms-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 1.25rem;
+}
+
+.cms-panel h1,
+.cms-panel h2,
+.cms-panel h3 {
+  margin: 0 0 0.75rem;
+}
+
+.cms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  padding: 24px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-row.full {
+  grid-template-columns: 1fr;
+}
+
+label {
+  display: grid;
+  gap: 0.35rem;
+  color: #FFFFFF;
+  font-size: 0.95rem;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  background: rgba(255,255,255,0.06);
+  padding: 0.95rem 0.9rem;
+  border-radius: 16px;
+  color: #FFFFFF;
+}
+
+textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+fieldset {
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 1rem;
+  background: rgba(255,255,255,0.03);
+}
+
+fieldset legend {
+  padding: 0 0.5rem;
+  font-weight: 700;
+}
+
+.marker-item.active {
+  border-color: rgba(240,32,40,0.9);
+  box-shadow: 0 0 0 2px rgba(240,32,40,0.18);
+}
+
+.cms-message {
+  margin-bottom: 1rem;
+}
+
+.item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.cms-message,
+.success-message,
+.error-message {
+  padding: 1rem;
+  border-radius: 18px;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.success-message {
+  background: rgba(36,123,160,0.16);
+  color: #E3F5FF;
+}
+
+.error-message {
+  background: rgba(240,50,40,0.18);
+  color: #FFD7D7;
+}
+
+.cms-message.success-message {
+  background: rgba(36,123,160,0.16);
+  color: #E3F5FF;
+}
+
+.cms-message.error-message {
+  background: rgba(240,50,40,0.18);
+  color: #FFD7D7;
+}
+
+.note {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.cms-footer {
+  margin-top: 2rem;
+  padding: 1rem 0;
+  color: var(--muted);
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .cms-header {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .cms-nav {
+    justify-content: center;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}

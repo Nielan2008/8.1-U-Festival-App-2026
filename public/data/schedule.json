@@ -1,0 +1,97 @@
+{
+  "sat": [
+    {
+      "stage": "Ponton",
+      "acts": [
+        { "id": "armin", "title": "Armin van Buuren", "start": "11:00", "end": "13:00" },
+        { "id": "kensington", "title": "Kensington", "start": "13:15", "end": "14:30" },
+        { "id": "destaat", "title": "De Staat", "start": "14:45", "end": "16:30" },
+        { "id": "navarone", "title": "Navarone", "start": "17:00", "end": "18:30" },
+        { "id": "dotan", "title": "Dotan", "start": "19:00", "end": "20:15" },
+        { "id": "froukje", "title": "Froukje", "start": "22:15", "end": "23:45" }
+      ]
+    },
+    {
+      "stage": "The Lake",
+      "acts": [
+        { "id": "talent-1", "title": "Talent Set 1", "start": "11:15", "end": "12:00" },
+        { "id": "talent-2", "title": "Talent Set 2", "start": "12:30", "end": "13:15" },
+        { "id": "talent-3", "title": "Talent Set 3", "start": "13:45", "end": "14:30" },
+        { "id": "talent-4", "title": "Talent Set 4", "start": "15:00", "end": "15:45" },
+        { "id": "talent-5", "title": "Talent Set 5", "start": "16:15", "end": "17:00" },
+        { "id": "talent-6", "title": "Talent Set 6", "start": "17:30", "end": "18:15" },
+        { "id": "talent-7", "title": "Talent Set 7", "start": "19:00", "end": "19:45" }
+      ]
+    },
+    {
+      "stage": "The Club",
+      "acts": [
+        { "id": "comedy-sat", "title": "Comedy", "start": "12:15", "end": "13:00" },
+        { "id": "lecture-sat", "title": "Lecture", "start": "13:45", "end": "14:30" },
+        { "id": "theater-sat", "title": "Theater", "start": "14:30", "end": "15:15" },
+        { "id": "movie-sat", "title": "Movie", "start": "17:00", "end": "18:30" },
+        { "id": "performance", "title": "Performance", "start": "19:15", "end": "20:00" },
+        { "id": "illusionist", "title": "Illusionist", "start": "22:15", "end": "23:00" }
+      ]
+    },
+    {
+      "stage": "Hangar",
+      "acts": [
+        { "id": "dj-1", "title": "DJ Set 1", "start": "11:30", "end": "12:15" },
+        { "id": "dj-2", "title": "DJ Set 2", "start": "12:45", "end": "13:30" },
+        { "id": "dj-3", "title": "DJ Set 3", "start": "14:00", "end": "14:45" },
+        { "id": "dj-4", "title": "DJ Set 4", "start": "15:15", "end": "16:00" },
+        { "id": "dj-5", "title": "DJ Set 5", "start": "16:30", "end": "17:15" },
+        { "id": "dj-6", "title": "DJ Set 6", "start": "18:00", "end": "18:45" },
+        { "id": "dj-7", "title": "DJ Set 7", "start": "19:30", "end": "20:15" },
+        { "id": "dj-8", "title": "DJ Set 8", "start": "21:00", "end": "21:45" }
+      ]
+    }
+  ],
+  "sun": [
+    {
+      "stage": "Ponton",
+      "acts": [
+        { "id": "martin", "title": "Martin Garrix", "start": "11:00", "end": "13:00" },
+        { "id": "within", "title": "Within Temptation", "start": "13:15", "end": "15:00" },
+        { "id": "chef", "title": "Chef'Special", "start": "16:30", "end": "18:15" },
+        { "id": "eefje", "title": "Eefje de Visser", "start": "19:15", "end": "21:00" },
+        { "id": "spinvis", "title": "Spinvis", "start": "22:15", "end": "23:45" }
+      ]
+    },
+    {
+      "stage": "The Lake",
+      "acts": [
+        { "id": "talent-sun-1", "title": "Talent Set 1", "start": "11:30", "end": "12:15" },
+        { "id": "talent-sun-2", "title": "Talent Set 2", "start": "12:45", "end": "13:30" },
+        { "id": "talent-sun-3", "title": "Talent Set 3", "start": "14:00", "end": "14:45" },
+        { "id": "talent-sun-4", "title": "Talent Set 4", "start": "15:15", "end": "16:00" },
+        { "id": "talent-sun-5", "title": "Talent Set 5", "start": "16:45", "end": "17:30" },
+        { "id": "talent-sun-6", "title": "Talent Set 6", "start": "18:00", "end": "18:45" }
+      ]
+    },
+    {
+      "stage": "The Club",
+      "acts": [
+        { "id": "comedy-sun", "title": "Comedy", "start": "12:30", "end": "13:15" },
+        { "id": "lecture-sun", "title": "Lecture", "start": "13:45", "end": "14:30" },
+        { "id": "theater-sun", "title": "Theater", "start": "15:00", "end": "15:45" },
+        { "id": "movie-sun", "title": "Movie", "start": "17:00", "end": "18:30" },
+        { "id": "magic", "title": "Magic Show", "start": "19:15", "end": "20:00" }
+      ]
+    },
+    {
+      "stage": "Hangar",
+      "acts": [
+        { "id": "dj-sun-1", "title": "DJ Set 1", "start": "11:15", "end": "12:00" },
+        { "id": "dj-sun-2", "title": "DJ Set 2", "start": "12:30", "end": "13:15" },
+        { "id": "dj-sun-3", "title": "DJ Set 3", "start": "14:00", "end": "14:45" },
+        { "id": "dj-sun-4", "title": "DJ Set 4", "start": "15:15", "end": "16:00" },
+        { "id": "dj-sun-5", "title": "DJ Set 5", "start": "16:30", "end": "17:15" },
+        { "id": "dj-sun-6", "title": "DJ Set 6", "start": "18:00", "end": "18:45" },
+        { "id": "dj-sun-7", "title": "DJ Set 7", "start": "19:30", "end": "20:15" },
+        { "id": "dj-sun-8", "title": "DJ Set 8", "start": "21:00", "end": "21:45" }
+      ]
+    }
+  ]
+}

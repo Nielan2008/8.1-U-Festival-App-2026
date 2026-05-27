@@ -4,7 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently \"vite\" \"php -S localhost:8080 -t .\"",
+    "cms": "php -S localhost:8080 -t .",
+    "dev:cms": "npm run dev",
     "build": "vite build",
     "preview": "vite preview"
   },
@@ -19,6 +21,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",
+    "concurrently": "^8.2.2",
     "vite": "^5.4.0"
   }
 }

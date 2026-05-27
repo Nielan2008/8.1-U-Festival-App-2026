@@ -32,6 +32,14 @@ function AppShell() {
     window.localStorage.setItem('loveu-theme', theme);
   }, [theme]);
 
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/service-worker.js').catch((err) => {
+        console.warn('Service worker registration failed:', err);
+      });
+    }
+  }, []);
+
   const pages = useMemo(
     () => [
       { to: '/', label: t('nav.home') },
