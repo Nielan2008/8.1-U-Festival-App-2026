@@ -93,6 +93,110 @@ sh: 1: vite: Permission denied
 ==> Build failed 😞
 ==> Common ways to troubleshoot your deploy: https://render.com/docs/node-version
 
+### Prompt 6 — Render lockfile and Vite version rebuild fix
+**Description:**
+Resolve the Render.com build failure caused by stale or mismatched Vite dependencies and a corrupted lockfile. Regenerate `package-lock.json`, pin `vite` and `@vitejs/plugin-react` to stable exact versions, move Vite build dependencies into `dependencies`, add a clean `.npmrc`, and pin Node to `20.19.2`.
+
+PROMPT:
+My Render.com deploy is failing with this error:
+
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find module
+  '/opt/render/project/src/node_modules/vite/dist/node/chunks/chunk.js'
+  imported from .../node_modules/vite/dist/node/cli.js
+
+This means vite installed but is incomplete/corrupted on Render.
+The root cause is a stale package-lock.json or an incorrect vite version
+that does not match what Render's npm install resolves to.
+
+Please fix ALL of the following:
+
+---
+
+## FIX 1: Delete and regenerate package-lock.json
+
+Delete package-lock.json entirely and regenerate it cleanly by running:
+  npm install
+
+This ensures the lockfile matches the actual installed packages.
+Commit the new package-lock.json to the repo.
+
+---
+
+## FIX 2: Pin vite to a specific stable version
+
+In package.json, set vite to an exact pinned version (no ^ or ~) in dependencies:
+  "vite": "5.4.19"
+
+And @vitejs/plugin-react to:
+  "@vitejs/plugin-react": "4.3.4"
+
+These are the latest stable versions confirmed to work with Node 24.
+Using ^ or ~ allows npm to resolve a broken or mismatched version on Render.
+
+---
+
+## FIX 3: Move ALL build-time packages to dependencies
+
+On Render, devDependencies are pruned before the build runs unless you set
+  NODE_ENV=development
+
+Move these from devDependencies to dependencies in package.json:
+  - vite
+  - @vitejs/plugin-react
+
+---
+
+## FIX 4: Update .nvmrc
+
+Change .nvmrc from:
+  24
+To a specific LTS-compatible version that is confirmed stable with Vite 5:
+  20.19.2
+
+Vite 5 has known issues with Node 24 due to ESM resolver changes.
+Node 20 is the current LTS and fully supported by Vite 5.
+
+Also update package.json engines:
+  "engines": {
+    "node": ">=20.0.0"
+  }
+
+---
+
+## FIX 5: Update build script back to npx
+
+Now that vite is properly in dependencies and the lockfile is clean, 
+update the build script in package.json to use npx which is more reliable:
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  }
+
+---
+
+## FIX 6: Add .npmrc to force clean installs
+
+Create a .npmrc file in the project root with:
+  prefer-dedupe=true
+  legacy-peer-deps=false
+
+---
+
+## After all fixes, run locally to verify:
+
+  rm -rf node_modules package-lock.json
+  npm install
+  npm run build
+
+Confirm the dist/ folder is generated successfully before committing.
+
+Then commit and push:
+  - package.json (updated versions + scripts)
+  - package-lock.json (freshly regenerated)
+  - .nvmrc (updated to 20)
+  - .npmrc (new file)
+
 BUG FIX 1: Language toggle buttons — missing styling and dark mode text color
 The NL/EN language toggle buttons currently have no styling and their text does not turn white in dark mode. Fix this completely:
 
