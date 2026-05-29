@@ -216,3 +216,4 @@ and click-to-place marker positioning.
 [paste this full prompt here]
 
 Make all changes incrementally. Do not remove or break any existing functionality.
+ 

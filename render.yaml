@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: loveu-festival-app
+    env: node
+    buildCommand: "npm install; node node_modules/vite/bin/vite.js build"
+    publishPath: dist

@@ -4,24 +4,27 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"npx vite\" \"php -S localhost:8080 -t .\"",
+    "dev": "concurrently \"node node_modules/vite/bin/vite.js\" \"php -S localhost:8080 -t .\"",
     "cms": "php -S localhost:8080 -t .",
     "dev:cms": "npm run dev",
-    "build": "npx vite build",
-    "preview": "npx vite preview"
+    "build": "node node_modules/vite/bin/vite.js build",
+    "preview": "node node_modules/vite/bin/vite.js preview"
   },
   "dependencies": {
+    "@vitejs/plugin-react": "^4.7.0",
     "i18next": "^23.0.0",
     "leaflet": "^1.9.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-i18next": "^13.0.1",
     "react-leaflet": "^5.0.0",
-    "react-router-dom": "^6.14.0"
+    "react-router-dom": "^6.14.0",
+    "vite": "^7.3.3"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.7.0",
-    "concurrently": "^8.2.2",
-    "vite": "^7.3.3"
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
