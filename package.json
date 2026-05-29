@@ -4,11 +4,11 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"vite\" \"php -S localhost:8080 -t .\"",
+    "dev": "concurrently \"npx vite\" \"php -S localhost:8080 -t .\"",
     "cms": "php -S localhost:8080 -t .",
     "dev:cms": "npm run dev",
-    "build": "vite build",
-    "preview": "vite preview"
+    "build": "npx vite build",
+    "preview": "npx vite preview"
   },
   "dependencies": {
     "i18next": "^23.0.0",
