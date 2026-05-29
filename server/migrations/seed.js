@@ -37,19 +37,42 @@ async function seed() {
       }
     }
 
-    // info
-    if (!(await tableHasRows('info'))) {
-      const infoFile = path.join(base, 'info.json');
-      if (fs.existsSync(infoFile)) {
-        const info = JSON.parse(fs.readFileSync(infoFile, 'utf8')) || [];
-        for (const it of info) {
-          const key = it.key || (it.title?.en || it.title || 'section');
-          const value = JSON.stringify(it);
-          await pool.query(`INSERT INTO info (key, value, lang) VALUES ($1,$2,$3)`, [key, value, it.lang || 'en']);
-          console.log('inserted info', key);
-        }
+
+// info
+if (!(await tableHasRows('info'))) {
+  const infoFile = path.join(base, 'info.json');
+  if (fs.existsSync(infoFile)) {
+    const infoData = JSON.parse(fs.readFileSync(infoFile, 'utf8')) || {};
+
+    // seed meta fields
+    if (infoData.meta) {
+      for (const [key, value] of Object.entries(infoData.meta)) {
+        await pool.query(`INSERT INTO info (key, value, lang) VALUES ($1,$2,$3)`, [key, JSON.stringify(value), 'both']);
+        console.log('inserted info meta', key);
       }
     }
+
+    // seed nl sections
+    if (Array.isArray(infoData.nl)) {
+      for (let i = 0; i < infoData.nl.length; i++) {
+        const section = infoData.nl[i];
+        const key = section.title?.nl || `section_${i}`;
+        await pool.query(`INSERT INTO info (key, value, lang) VALUES ($1,$2,$3)`, [key, JSON.stringify(section), 'nl']);
+        console.log('inserted info nl', key);
+      }
+    }
+
+    // seed en sections
+    if (Array.isArray(infoData.en)) {
+      for (let i = 0; i < infoData.en.length; i++) {
+        const section = infoData.en[i];
+        const key = section.title?.en || `section_${i}`;
+        await pool.query(`INSERT INTO info (key, value, lang) VALUES ($1,$2,$3)`, [key, JSON.stringify(section), 'en']);
+        console.log('inserted info en', key);
+      }
+    }
+  }
+}
 
     // map
     if (!(await tableHasRows('map_points'))) {
