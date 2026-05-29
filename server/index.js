@@ -82,6 +82,21 @@ app.post('/api/seed', requireAuth, async (req, res) => {
   }
 });
 
+// temporary browser-accessible seed endpoint (protected by SEED_KEY)
+app.get('/api/seed-db', async (req, res) => {
+  const key = req.query.key;
+  if (!process.env.SEED_KEY || key !== process.env.SEED_KEY) {
+    return res.status(403).json({ success: false, error: 'Forbidden' });
+  }
+  try {
+    await seed();
+    return res.json({ success: true, message: 'Database seeded!' });
+  } catch (err) {
+    console.error('Seed error', err);
+    return res.status(500).json({ success: false, error: err && err.message ? err.message : String(err) });
+  }
+});
+
 // API routes that require auth
 app.get('/api/news', requireAuth, async (req, res) => {
   const result = await pool.query('SELECT * FROM news ORDER BY published_at DESC');
