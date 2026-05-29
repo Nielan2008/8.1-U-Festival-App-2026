@@ -43,6 +43,56 @@ and click-to-place marker positioning.
 PROMPT:
 Fix the following bugs and add the following features to the existing ❤️U Festival PWA. Do not rebuild anything from scratch — work with the existing codebase only.
 
+### Prompt 4 — Node modules / build fix
+**Description:**
+Resolve the Render deployment build errors by fixing package configuration and ensuring the project does not commit node_modules. Update script paths or dependency versions so Vite works correctly in the build environment.
+
+PROMPT:
+GIT IGNORE NODE_MODULES FIX
+
+### Prompt 5 — Render build dependency conflict and Vite permission fix
+**Description:**
+Fix the Render deploy failure where `npm install` fails due to a Vite/@vitejs/plugin-react peer dependency conflict and `npm run build` fails with `sh: 1: vite: Permission denied`.
+
+PROMPT:
+==> Cloning from https://github.com/Nielan2008/8.1-U-Festival-App-2026
+==> Checking out commit 52dfecfe0611f7df47f6f8edadf5c98ccfea6204 in branch main
+==> Using Node.js version 24.14.1 (default)
+==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+==> Running build command 'npm install; npm run build'...
+npm error code ERESOLVE
+npm error ERESOLVE could not resolve
+npm error
+npm error While resolving: @vitejs/plugin-react@4.7.0
+npm error Found: vite@8.0.14
+npm error node_modules/vite
+npm error   dev vite@"^8.0.14" from the root project
+npm error
+npm error Could not resolve dependency:
+npm error peer vite@"^4.2.0 || ^5.0.0 || ^6.0.0 || ^7.0.0" from @vitejs/plugin-react@4.7.0
+npm error node_modules/@vitejs/plugin-react
+npm error   dev @vitejs/plugin-react@"^4.3.1" from the root project
+npm error
+npm error Conflicting peer dependency: vite@7.3.3
+npm error node_modules/vite
+npm error   peer vite@"^4.2.0 || ^5.0.0 || ^6.0.0 || ^7.0.0" from @vitejs/plugin-react@4.7.0
+npm error   node_modules/@vitejs/plugin-react
+npm error     dev @vitejs/plugin-react@"^4.3.1" from the root project
+npm error
+npm error Fix the upstream dependency conflict, or retry
+npm error this command with --force or --legacy-peer-deps
+npm error to accept an incorrect (and potentially broken) dependency resolution.
+npm error
+npm error
+npm error For a full report see:
+npm error /opt/render/.cache/_logs/2026-05-29T07_57_40_842Z-eresolve-report.txt
+npm error A complete log of this run can be found in: /opt/render/.cache/_logs/2026-05-29T07_57_40_842Z-debug-0.log
+> loveu-festival-app@0.1.0 build
+> npx vite build
+sh: 1: vite: Permission denied
+==> Build failed 😞
+==> Common ways to troubleshoot your deploy: https://render.com/docs/node-version
+
 BUG FIX 1: Language toggle buttons — missing styling and dark mode text color
 The NL/EN language toggle buttons currently have no styling and their text does not turn white in dark mode. Fix this completely:
 
