@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import scheduleData from '../data/schedule.json';
-import actsData from '../data/acts.json';
-import { loadData, localize } from '../utils/dataStore.js';
+import { localize } from '../utils/dataStore.js';
 import ScheduleBlock from '../components/ScheduleBlock.jsx';
 import ActModal from '../components/ActModal.jsx';
 
@@ -35,7 +33,7 @@ export default function Schedule() {
   const { i18n, t } = useTranslation();
   const [day, setDay] = useState('sat');
   const [selectedAct, setSelectedAct] = useState(null);
-  const [schedule, setSchedule] = useState(scheduleData);
+  const [schedule, setSchedule] = useState({});
   const [favourites, setFavourites] = useState(() => {
     const saved = window.localStorage.getItem('loveu-favourites');
     return saved ? JSON.parse(saved) : [];
@@ -43,14 +41,26 @@ export default function Schedule() {
   const [notificationsAllowed, setNotificationsAllowed] = useState(false);
 
   useEffect(() => {
-    loadData('schedule', scheduleData).then(setSchedule).catch(() => setSchedule(scheduleData));
+    let mounted = true;
+    Promise.all([
+      fetch('/api/schedule', { credentials: 'include' }).then(r => r.json()),
+      fetch('/api/acts', { credentials: 'include' }).then(r => r.json())
+    ]).then(([scheduleData, actsArray]) => {
+      if (!mounted) return;
+      // convert acts array to map by id
+      const actsMap = {};
+      (actsArray || []).forEach(a => { actsMap[a.id] = a; });
+      setSchedule(scheduleData.reduce ? scheduleData : scheduleData);
+      window.__ACTS_MAP = actsMap;
+    }).catch(() => {});
+    return () => (mounted = false);
   }, []);
 
   const dayData = schedule[day] || [];
   const blocks = useMemo(
     () => dayData.map((stage) => ({
       stage: stage.stage,
-      acts: stage.acts.map((act) => getActDetails(stage.stage, act, actsData, i18n.language))
+      acts: stage.acts.map((act) => getActDetails(stage.stage, act, window.__ACTS_MAP || {}, i18n.language))
     })),
     [dayData, i18n.language]
   );

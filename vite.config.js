@@ -9,6 +9,9 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 5173,
+    proxy: {
+      '/api': 'http://localhost:3001'
+    },
     allowedHosts: ['eight-1-u-festival-app-2026.onrender.com']
   },
   preview: {

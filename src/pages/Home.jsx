@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Card from '../components/Card.jsx';
-import newsData from '../data/news.json';
-import { loadData, localize } from '../utils/dataStore.js';
+import { localize } from '../utils/dataStore.js';
 
 export default function Home() {
   const { i18n, t } = useTranslation();
-  const [news, setNews] = useState(newsData);
-
+  const [news, setNews] = useState([]);
   useEffect(() => {
-    loadData('news', newsData).then(setNews).catch(() => setNews(newsData));
+    let mounted = true;
+    fetch('/api/news', { credentials: 'include' })
+      .then((r) => r.json())
+      .then((data) => { if (mounted) setNews(data); })
+      .catch(() => { if (mounted) setNews([]); });
+    return () => (mounted = false);
   }, []);
 
   const sortedNews = [...news].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));

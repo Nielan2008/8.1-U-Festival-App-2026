@@ -1,21 +1,20 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Accordion from '../components/Accordion.jsx';
-import infoData from '../data/info.json';
-import { loadData, localize } from '../utils/dataStore.js';
+import { localize } from '../utils/dataStore.js';
 
 export default function Info() {
   const { i18n, t } = useTranslation();
-  const [info, setInfo] = useState(infoData);
-  const [items, setItems] = useState(infoData[i18n.language] || infoData.en || []);
+  const [info, setInfo] = useState({});
+  const [items, setItems] = useState([]);
 
   useEffect(() => {
-    loadData('info', infoData).then((data) => {
-      setInfo(data);
-      setItems(data[i18n.language] || data.en || []);
-    }).catch(() => {
-      setItems(infoData[i18n.language] || infoData.en || []);
-    });
+    let mounted = true;
+    fetch('/api/info', { credentials: 'include' })
+      .then((r) => r.json())
+      .then((data) => { if (!mounted) return; setInfo(data); const byLang = {}; data.forEach((it) => { byLang[it.lang || 'en'] = byLang[it.lang || 'en'] || []; try { byLang[it.lang || 'en'].push(JSON.parse(it.value)); } catch { byLang[it.lang || 'en'].push(it.value); } }); setItems(byLang[i18n.language] || byLang.en || []); })
+      .catch(() => { /* ignore */ });
+    return () => (mounted = false);
   }, [i18n.language]);
 
   const meta = info.meta || {};

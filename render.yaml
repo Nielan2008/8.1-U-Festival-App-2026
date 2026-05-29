@@ -1,6 +1,29 @@
 services:
   - type: web
     name: loveu-festival-app
+    runtime: node
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: loveu-festival-db
+          property: connectionString
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: CMS_PASSWORD
+        value: changeme123
+      - key: NODE_ENV
+        value: production
+
+databases:
+  - name: loveu-festival-db
+    databaseName: loveu_festival
+    user: loveu_admin
+    plan: free
+services:
+  - type: web
+    name: loveu-festival-app
     env: node
     buildCommand: "npm install; node node_modules/vite/bin/vite.js build"
     publishPath: dist

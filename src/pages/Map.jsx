@@ -3,9 +3,7 @@ import L from 'leaflet';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { createStageMarker } from '../components/MapMarker.jsx';
 import { useTranslation } from 'react-i18next';
-import mapData from '../data/map.json';
-import scheduleData from '../data/schedule.json';
-import { loadData, localize } from '../utils/dataStore.js';
+import { localize } from '../utils/dataStore.js';
 
 const festivalStart = new Date('2026-08-15T00:00:00');
 
@@ -24,7 +22,8 @@ export default function MapPage() {
   const { i18n, t } = useTranslation();
   const [position, setPosition] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
-  const [mapConfig, setMapConfig] = useState(mapData);
+  const [mapConfig, setMapConfig] = useState({ locations: [] });
+  const [scheduleData, setScheduleData] = useState({});
   const watchRef = useRef(null);
   const mapRef = useRef(null);
   const center = [51.9845, 5.0540];
@@ -58,40 +57,30 @@ export default function MapPage() {
   }, [t]);
 
   useEffect(() => {
-    loadData('map', mapData).then(setMapConfig).catch(() => setMapConfig(mapData));
+    let mounted = true;
+    fetch('/api/map', { credentials: 'include' }).then(r => r.json()).then((d) => { if (mounted) setMapConfig({ locations: d }); }).catch(() => {});
+    fetch('/api/schedule', { credentials: 'include' }).then(r => r.json()).then((d) => { if (mounted) setScheduleData(d); }).catch(() => {});
+    return () => { mounted = false; };
   }, []);
 
   const stageEvents = useMemo(() => {
     const now = new Date();
-    const days = [scheduleData.sat, scheduleData.sun];
-
-    const allShows = days.flatMap((dayActs, dayIndex) =>
-      dayActs.flatMap((stage) =>
-        stage.acts.map((act) => {
-          const date = new Date(festivalStart.getTime() + dayIndex * 24 * 60 * 60 * 1000);
-          const [hour, minute] = act.start.split(':').map(Number);
-          const [endHour, endMinute] = act.end.split(':').map(Number);
-          date.setHours(hour, minute, 0, 0);
-          const endDate = new Date(festivalStart.getTime() + dayIndex * 24 * 60 * 60 * 1000);
-          endDate.setHours(endHour, endMinute, 0, 0);
-          return {
-            ...act,
-            stage: stage.stage,
-            startDate: date,
-            endDate
-          };
-        })
-      )
-    );
+    // scheduleData may be an array of rows; try to reconstruct day arrays if present
+    const allShows = [];
+    if (Array.isArray(scheduleData)) {
+      scheduleData.forEach((row) => {
+        allShows.push({ title: row.title || '', stage: row.stage, start: row.start_time || row.start, end: row.end_time || row.end, startDate: row.start_time ? new Date(`1970-01-01T${row.start_time}:00`) : null, endDate: row.end_time ? new Date(`1970-01-01T${row.end_time}:00`) : null });
+      });
+    }
 
     return mapConfig.locations.map((location) => {
       const label = localize(location.label, i18n.language);
-      const events = allShows.filter((act) => act.stage === label).sort((a, b) => a.startDate - b.startDate);
-      const current = events.find((act) => act.startDate <= now && act.endDate > now);
-      const next = events.find((act) => act.startDate > now);
+      const events = allShows.filter((act) => act.stage === label).sort((a, b) => (a.startDate || 0) - (b.startDate || 0));
+      const current = events.find((act) => act.startDate && act.endDate && act.startDate <= now && act.endDate > now);
+      const next = events.find((act) => act.startDate && act.startDate > now);
       return { ...location, current, next, label };
     });
-  }, []);
+  }, [mapConfig, scheduleData, i18n.language]);
 
   const centerOnCurrent = () => {
     if (!mapRef.current || !position) return;
