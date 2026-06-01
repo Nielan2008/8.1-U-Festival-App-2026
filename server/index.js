@@ -7,6 +7,7 @@ import pool from './db.js';
 import seed from './migrations/seed.js';
 import session from 'express-session';
 import connectPgSimple from 'connect-pg-simple';
+const isProd = process.env.NODE_ENV === 'production';
 
 const PgSession = connectPgSimple(session);
 import cors from 'cors';
