@@ -20,7 +20,13 @@ app.use(express.json());
 
 const SESSION_SECRET = process.env.SESSION_SECRET || 'dev_secret';
 
-app.use(cors({ origin: true, credentials: true }));
+app.set('trust proxy', 1);
+app.use(cors({
+  origin: isProd
+    ? 'https://eight-1-u-festival-app-2026.onrender.com'
+    : 'http://localhost:5173',
+  credentials: true
+}));
 app.use(session({
   store: new PgSession({
     pool: pool,
@@ -71,9 +77,16 @@ app.post('/api/login', (req, res) => {
   }
   if (password === cms_password) {
     req.session.auth = true;
-    return res.json({ ok: true });
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.status(500).json({ error: 'session error' });
+      }
+      return res.json({ ok: true });
+    });
+  } else {
+    return res.status(401).json({ error: 'incorrect' });
   }
-  return res.status(401).json({ error: 'incorrect' });
 });
 
 app.post('/api/logout', (req, res) => {
