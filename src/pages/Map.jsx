@@ -65,17 +65,33 @@ export default function MapPage() {
 
   const stageEvents = useMemo(() => {
     const now = new Date();
-    // scheduleData may be an array of rows; try to reconstruct day arrays if present
     const allShows = [];
+
+    const addShow = (row) => {
+      allShows.push({
+        title: row.title || '',
+        stage: row.stage,
+        start: row.start_time || row.start,
+        end: row.end_time || row.end,
+        startDate: row.start_time ? new Date(`1970-01-01T${row.start_time}:00`) : row.start ? new Date(`1970-01-01T${row.start}:00`) : null,
+        endDate: row.end_time ? new Date(`1970-01-01T${row.end_time}:00`) : row.end ? new Date(`1970-01-01T${row.end}:00`) : null
+      });
+    };
+
     if (Array.isArray(scheduleData)) {
-      scheduleData.forEach((row) => {
-        allShows.push({ title: row.title || '', stage: row.stage, start: row.start_time || row.start, end: row.end_time || row.end, startDate: row.start_time ? new Date(`1970-01-01T${row.start_time}:00`) : null, endDate: row.end_time ? new Date(`1970-01-01T${row.end_time}:00`) : null });
+      scheduleData.forEach(addShow);
+    } else if (scheduleData && typeof scheduleData === 'object') {
+      Object.values(scheduleData).flat(Infinity).forEach((item) => {
+        if (item && typeof item === 'object' && (item.stage || item.start || item.start_time)) {
+          addShow(item);
+        }
       });
     }
 
     return mapConfig.locations.map((location) => {
-      const label = localize(location.label, i18n.language);
-      const events = allShows.filter((act) => act.stage === label).sort((a, b) => (a.startDate || 0) - (b.startDate || 0));
+      const label = localize(location.label || location.name, i18n.language);
+      const stageKey = location.name || location.id || (typeof location.label === 'string' ? location.label : location.label?.en) || label;
+      const events = allShows.filter((act) => act.stage === stageKey || act.stage === label).sort((a, b) => (a.startDate || 0) - (b.startDate || 0));
       const current = events.find((act) => act.startDate && act.endDate && act.startDate <= now && act.endDate > now);
       const next = events.find((act) => act.startDate && act.startDate > now);
       return { ...location, current, next, label };
@@ -105,7 +121,7 @@ export default function MapPage() {
             <Marker key={location.id} position={[location.lat, location.lng]} icon={createStageMarker(location.label)}>
               <Popup>
                 <strong>{location.label}</strong>
-                <p>{localize(location.info, i18n.language)}</p>
+                <p>{localize(location.description || location.info, i18n.language)}</p>
                 {location.current ? <p><strong>{t('map.currentAct')}:</strong> {location.current.title} ({location.current.start})</p> : <p>{t('schedule.noEvents')}</p>}
                 {location.next ? <p><strong>{t('schedule.nextUp')}:</strong> {location.next.title} ({location.next.start})</p> : null}
               </Popup>

@@ -10,7 +10,7 @@ async function tableHasRows(table) {
 
 async function seed() {
   try {
-    const base = path.resolve('src', 'data');
+    const base = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'src', 'data');
     // acts
     if (!(await tableHasRows('acts'))) {
       const actsFile = path.join(base, 'acts.json');

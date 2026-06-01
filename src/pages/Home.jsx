@@ -15,7 +15,7 @@ export default function Home() {
     return () => (mounted = false);
   }, []);
 
-  const sortedNews = [...news].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  const sortedNews = [...news].sort((a, b) => new Date(b.published_at || b.timestamp) - new Date(a.published_at || a.timestamp));
 
   return (
     <section>
@@ -28,7 +28,7 @@ export default function Home() {
               key={item.id}
               title={localize(item.title, i18n.language)}
               text={localize(item.text, i18n.language)}
-              timestamp={item.timestamp}
+              timestamp={item.published_at || item.timestamp}
             />
           ))
         ) : (

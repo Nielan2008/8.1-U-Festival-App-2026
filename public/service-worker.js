@@ -4,11 +4,6 @@ const ASSETS = [
   '/index.html',
   '/manifest.json',
   '/icon.svg',
-  '/src/data/news.json',
-  '/src/data/info.json',
-  '/src/data/schedule.json',
-  '/src/data/map.json',
-  '/src/data/acts.json',
   '/src/index.css'
 ];
 
