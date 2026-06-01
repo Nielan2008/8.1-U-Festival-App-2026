@@ -6,16 +6,35 @@ import { localize } from '../utils/dataStore.js';
 export default function Home() {
   const { i18n, t } = useTranslation();
   const [news, setNews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   useEffect(() => {
     let mounted = true;
+    setLoading(true);
+    setError(null);
+
     fetch('/api/news', { credentials: 'include' })
-      .then((r) => r.json())
-      .then((data) => { if (mounted) setNews(data); })
-      .catch(() => { if (mounted) setNews([]); });
-    return () => (mounted = false);
+      .then((r) => {
+        if (!r.ok) throw new Error(`News request failed: ${r.status}`);
+        return r.json();
+      })
+      .then((data) => { if (mounted) setNews(Array.isArray(data) ? data : []); })
+      .catch((err) => { console.error('Failed to load news', err); if (mounted) { setNews([]); setError('Failed to load news'); } })
+      .finally(() => { if (mounted) setLoading(false); });
+
+    return () => { mounted = false; };
   }, []);
 
   const sortedNews = [...news].sort((a, b) => new Date(b.published_at || b.timestamp) - new Date(a.published_at || a.timestamp));
+
+  if (loading) {
+    return <section><div className="home-loading">Loading news…</div></section>;
+  }
+
+  if (error) {
+    return <section><div className="home-error">{error}</div></section>;
+  }
 
   return (
     <section>

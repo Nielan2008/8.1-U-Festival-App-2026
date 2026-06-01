@@ -22,8 +22,10 @@ export default function MapPage() {
   const { i18n, t } = useTranslation();
   const [position, setPosition] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
-  const [mapConfig, setMapConfig] = useState({ locations: [] });
-  const [scheduleData, setScheduleData] = useState({});
+  const [locations, setLocations] = useState([]);
+  const [scheduleData, setScheduleData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const watchRef = useRef(null);
   const mapRef = useRef(null);
   const center = [51.9845, 5.0540];
@@ -58,8 +60,44 @@ export default function MapPage() {
 
   useEffect(() => {
     let mounted = true;
-    fetch('/api/map', { credentials: 'include' }).then(r => r.json()).then((d) => { if (mounted) setMapConfig({ locations: d }); }).catch(() => {});
-    fetch('/api/schedule', { credentials: 'include' }).then(r => r.json()).then((d) => { if (mounted) setScheduleData(d); }).catch(() => {});
+    setLoading(true);
+    setLoadError(null);
+
+    const fetchMap = fetch('/api/map', { credentials: 'include' })
+      .then((r) => {
+        if (!r.ok) throw new Error(`Map request failed: ${r.status}`);
+        return r.json();
+      })
+      .then((data) => {
+        if (!mounted) return;
+        if (Array.isArray(data)) {
+          setLocations(data);
+        } else if (data && Array.isArray(data.locations)) {
+          setLocations(data.locations);
+        } else {
+          setLocations([]);
+        }
+      });
+
+    const fetchSchedule = fetch('/api/schedule', { credentials: 'include' })
+      .then((r) => {
+        if (!r.ok) throw new Error(`Schedule request failed: ${r.status}`);
+        return r.json();
+      })
+      .then((data) => {
+        if (!mounted) return;
+        setScheduleData(Array.isArray(data) ? data : []);
+      });
+
+    Promise.all([fetchMap, fetchSchedule])
+      .catch((err) => {
+        console.error('Failed to load map page data:', err);
+        if (mounted) setLoadError('Failed to load map data');
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+
     return () => { mounted = false; };
   }, []);
 
@@ -88,7 +126,7 @@ export default function MapPage() {
       });
     }
 
-    return mapConfig.locations.map((location) => {
+    return (Array.isArray(locations) ? locations : []).map((location) => {
       const label = localize(location.label || location.name, i18n.language);
       const stageKey = location.name || location.id || (typeof location.label === 'string' ? location.label : location.label?.en) || label;
       const events = allShows.filter((act) => act.stage === stageKey || act.stage === label).sort((a, b) => (a.startDate || 0) - (b.startDate || 0));
@@ -96,12 +134,20 @@ export default function MapPage() {
       const next = events.find((act) => act.startDate && act.startDate > now);
       return { ...location, current, next, label };
     });
-  }, [mapConfig, scheduleData, i18n.language]);
+  }, [locations, scheduleData, i18n.language]);
 
   const centerOnCurrent = () => {
     if (!mapRef.current || !position) return;
     mapRef.current.flyTo([position.lat, position.lng], 17, { duration: 0.8 });
   };
+
+  if (loading) {
+    return <section className="map-page"><div className="map-loading">Loading map…</div></section>;
+  }
+
+  if (loadError) {
+    return <section className="map-page"><div className="map-error">{loadError}</div></section>;
+  }
 
   return (
     <section className="map-page">

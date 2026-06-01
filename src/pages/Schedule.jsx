@@ -29,11 +29,34 @@ function parseMinutes(time) {
   return hour * 60 + minute;
 }
 
+function normalizeScheduleData(scheduleData) {
+  const rows = Array.isArray(scheduleData) ? scheduleData : [];
+  return rows.reduce((days, row) => {
+    const dayKey = String(row.day || 'unknown').toLowerCase();
+    const stageName = row.stage || 'Unknown stage';
+    const stageList = days[dayKey] || (days[dayKey] = []);
+    let stage = stageList.find((item) => item.stage === stageName);
+    if (!stage) {
+      stage = { stage: stageName, acts: [] };
+      stageList.push(stage);
+    }
+    stage.acts.push({
+      id: row.act_id || `${dayKey}-${stageName}-${row.start_time || row.start || ''}`,
+      title: '',
+      start: row.start_time || row.start || '',
+      end: row.end_time || row.end || ''
+    });
+    return days;
+  }, {});
+}
+
 export default function Schedule() {
   const { i18n, t } = useTranslation();
   const [day, setDay] = useState('sat');
   const [selectedAct, setSelectedAct] = useState(null);
   const [schedule, setSchedule] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [favourites, setFavourites] = useState(() => {
     const saved = window.localStorage.getItem('loveu-favourites');
     return saved ? JSON.parse(saved) : [];
@@ -42,18 +65,32 @@ export default function Schedule() {
 
   useEffect(() => {
     let mounted = true;
+    setLoading(true);
+    setError(null);
+
     Promise.all([
-      fetch('/api/schedule', { credentials: 'include' }).then(r => r.json()),
-      fetch('/api/acts', { credentials: 'include' }).then(r => r.json())
+      fetch('/api/schedule', { credentials: 'include' }).then((r) => {
+        if (!r.ok) throw new Error(`Schedule request failed: ${r.status}`);
+        return r.json();
+      }),
+      fetch('/api/acts', { credentials: 'include' }).then((r) => {
+        if (!r.ok) throw new Error(`Acts request failed: ${r.status}`);
+        return r.json();
+      })
     ]).then(([scheduleData, actsArray]) => {
       if (!mounted) return;
-      // convert acts array to map by id
       const actsMap = {};
-      (actsArray || []).forEach(a => { actsMap[a.id] = a; });
-      setSchedule(scheduleData.reduce ? scheduleData : scheduleData);
+      (Array.isArray(actsArray) ? actsArray : []).forEach((a) => { actsMap[a.id] = a; });
+      setSchedule(normalizeScheduleData(scheduleData));
       window.__ACTS_MAP = actsMap;
-    }).catch(() => {});
-    return () => (mounted = false);
+    }).catch((err) => {
+      console.error('Failed to load schedule data:', err);
+      if (mounted) setError('Failed to load schedule');
+    }).finally(() => {
+      if (mounted) setLoading(false);
+    });
+
+    return () => { mounted = false; };
   }, []);
 
   const dayData = schedule[day] || [];
@@ -106,6 +143,14 @@ export default function Schedule() {
       setNotificationsAllowed(permission === 'granted');
     });
   };
+
+  if (loading) {
+    return <section className="schedule-shell"><div className="schedule-loading">Loading schedule…</div></section>;
+  }
+
+  if (error) {
+    return <section className="schedule-shell"><div className="schedule-error">{error}</div></section>;
+  }
 
   return (
     <section className="schedule-shell">
