@@ -6,6 +6,9 @@ import { fileURLToPath } from 'url';
 import pool from './db.js';
 import seed from './migrations/seed.js';
 import session from 'express-session';
+import connectPgSimple from 'connect-pg-simple';
+
+const PgSession = connectPgSimple(session);
 import cors from 'cors';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -18,10 +21,20 @@ const SESSION_SECRET = process.env.SESSION_SECRET || 'dev_secret';
 
 app.use(cors({ origin: true, credentials: true }));
 app.use(session({
+  store: new PgSession({
+    pool: pool,
+    tableName: 'session',
+    createTableIfMissing: true
+  }),
   secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: process.env.NODE_ENV === 'production' }
+  cookie: {
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
+    httpOnly: true,
+    maxAge: 1000 * 60 * 60 * 24
+  }
 }));
 
 async function runMigrations() {
