@@ -5,7 +5,7 @@ export default function ActsEditor() {
   const [acts, setActs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ name: '', description: '', image_url: '' });
+  const [form, setForm] = useState({ name: '', genre:'', description: { nl:'', en:'' }, image_url: '' });
   const [msg, setMsg] = useState(null);
 
   const load = () => {
@@ -15,14 +15,33 @@ export default function ActsEditor() {
 
   useEffect(() => { load(); }, []);
 
-  const onAdd = () => { setEditing('new'); setForm({ name:'', description:'', image_url:'' }); };
-  const onEdit = (a) => { setEditing(a.id); setForm({ name:a.name, description:a.description, image_url:a.image_url }); };
+  const normalizeDescription = (description) => {
+    if (!description) return { nl:'', en:'' };
+    if (typeof description === 'string') {
+      try {
+        const parsed = JSON.parse(description);
+        if (parsed && typeof parsed === 'object') {
+          return { nl: parsed.nl ?? '', en: parsed.en ?? '' };
+        }
+      } catch (_) {
+        return { nl: description, en: '' };
+      }
+    }
+    if (typeof description === 'object') {
+      return { nl: description.nl ?? '', en: description.en ?? '' };
+    }
+    return { nl:'', en:'' };
+  };
+
+  const onAdd = () => { setEditing('new'); setForm({ name:'', genre:'', description:{ nl:'', en:'' }, image_url:'' }); };
+  const onEdit = (a) => { setEditing(a.id); setForm({ name:a.name ?? '', genre:a.genre ?? '', description:normalizeDescription(a.description), image_url:a.image_url ?? '' }); };
 
   const save = async () => {
     try {
       const url = editing === 'new' ? '/api/acts' : `/api/acts/${editing}`;
       const method = editing === 'new' ? 'POST' : 'PUT';
-      const r = await fetch(url, { method, headers:{'Content-Type':'application/json'}, body:JSON.stringify(form), credentials:'include' });
+      const payload = { ...form, description: JSON.stringify(form.description) };
+      const r = await fetch(url, { method, headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload), credentials:'include' });
       if (!r.ok) throw new Error('save failed');
       setMsg({success:'Saved'});
       setEditing(null);
@@ -55,7 +74,8 @@ export default function ActsEditor() {
           <div className="form-row"><input className="input" placeholder="Name" value={form.name} onChange={(e)=>setForm({...form,name:e.target.value})} /></div>
           <div className="form-row"><input className="input" placeholder="Genre" value={form.genre} onChange={(e)=>setForm({...form,genre:e.target.value})} /></div>
           <div className="form-row"><input className="input" placeholder="Image URL" value={form.image_url} onChange={(e)=>setForm({...form,image_url:e.target.value})} /></div>
-          <div className="form-row"><textarea className="input" placeholder="Description" value={form.description} onChange={(e)=>setForm({...form,description:e.target.value})} /></div>
+          <div className="form-row"><textarea className="input" placeholder="Description NL" value={form.description.nl} onChange={(e)=>setForm({...form,description:{...form.description,nl:e.target.value}})} /></div>
+          <div className="form-row"><textarea className="input" placeholder="Description EN" value={form.description.en} onChange={(e)=>setForm({...form,description:{...form.description,en:e.target.value}})} /></div>
           <div className="form-row"><button className="button" onClick={save}>Save</button> <button className="button ghost" onClick={()=>setEditing(null)}>Cancel</button></div>
         </div>
       ) : null}
