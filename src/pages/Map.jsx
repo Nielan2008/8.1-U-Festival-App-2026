@@ -137,7 +137,7 @@ export default function MapPage() {
   }, [locations, scheduleData, i18n.language]);
 
   const centerOnCurrent = () => {
-    if (!navigator.geolocation || !mapRef.current) return;
+    if (!(typeof navigator !== 'undefined' && navigator.geolocation) || !mapRef.current) return;
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
@@ -151,6 +151,8 @@ export default function MapPage() {
     );
   };
 
+  const geolocationSupported = typeof navigator !== 'undefined' && Boolean(navigator.geolocation);
+
   if (loading) {
     return <section className="map-page"><div className="map-loading">Loading map…</div></section>;
   }
@@ -162,7 +164,7 @@ export default function MapPage() {
   return (
     <section className="map-page">
       <div className="map-button-row">
-        <button type="button" className="map-button" onClick={centerOnCurrent} disabled={!position}>
+        <button type="button" className="map-button" onClick={centerOnCurrent} disabled={!geolocationSupported}>
           {t('map.centerButton')}
         </button>
       </div>

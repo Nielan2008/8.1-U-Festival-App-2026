@@ -11,8 +11,20 @@ export default function ScheduleEditor() {
   const load = () => { setLoading(true); fetch('/api/schedule', { credentials:'include' }).then(r=>r.json()).then(setItems).catch(()=>setMsg({error:'Failed'})).finally(()=>setLoading(false)); };
   useEffect(()=>{load()},[]);
 
-  const onAdd=()=>{setEditing('new');setForm({act_id:null,stage:'',day:'',start_time:'',end_time:''})}
-  const onEdit=(it)=>{setEditing(it.id);setForm({act_id:it.act_id,stage:it.stage,day:it.day,start_time:it.start_time,end_time:it.end_time})}
+  const normalizeField = (value) => {
+    if (Array.isArray(value)) return value.join(', ');
+    if (value && typeof value === 'object') return value.title || value.id || JSON.stringify(value);
+    return value ?? '';
+  };
+
+  const onAdd=()=>{setEditing('new');setForm({act_id:'',stage:'',day:'',start_time:'',end_time:''})}
+  const onEdit=(it)=>{setEditing(it.id);setForm({
+      act_id: normalizeField(it.act_id),
+      stage: normalizeField(it.stage),
+      day: normalizeField(it.day),
+      start_time: normalizeField(it.start_time),
+      end_time: normalizeField(it.end_time)
+  })}
   const save=async()=>{try{const url=editing==='new'?'/api/schedule':`/api/schedule/${editing}`;const method=editing==='new'?'POST':'PUT';const r=await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(form),credentials:'include'});if(!r.ok)throw new Error('save failed');setMsg({success:'Saved'});setEditing(null);load();}catch(e){setMsg({error:String(e)})}}
   const del=async(id)=>{if(!window.confirm('Delete?'))return;await fetch(`/api/schedule/${id}`,{method:'DELETE',credentials:'include'});setMsg({success:'Deleted'});load();}
 
