@@ -137,8 +137,18 @@ export default function MapPage() {
   }, [locations, scheduleData, i18n.language]);
 
   const centerOnCurrent = () => {
-    if (!mapRef.current || !position) return;
-    mapRef.current.flyTo([position.lat, position.lng], 17, { duration: 0.8 });
+    if (!navigator.geolocation || !mapRef.current) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setPosition(coords);
+        mapRef.current.flyTo([coords.lat, coords.lng], 17, { duration: 0.8 });
+      },
+      (error) => {
+        setErrorMessage(error.message || t('map.locationDenied'));
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 10000 }
+    );
   };
 
   if (loading) {

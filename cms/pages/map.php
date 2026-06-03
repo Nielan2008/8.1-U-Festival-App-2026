@@ -102,6 +102,7 @@ if (file_exists($mapFile)) {
     // adding markers is done on the separate add page; list page keeps edit/delete only
 
     let map;
+    let currentLocationMarker = null;
     const initMap = () => {
       if (typeof L === 'undefined') return;
       map = L.map('cms-map').setView([51.9845, 5.0540], 16);
@@ -152,9 +153,25 @@ if (file_exists($mapFile)) {
         return;
       }
       navigator.geolocation.getCurrentPosition((position) => {
-        if (!activeMarkerCard) return;
-        activeMarkerCard.querySelector('[data-field="lat"]').value = position.coords.latitude.toFixed(6);
-        activeMarkerCard.querySelector('[data-field="lng"]').value = position.coords.longitude.toFixed(6);
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        if (activeMarkerCard) {
+          activeMarkerCard.querySelector('[data-field="lat"]').value = lat.toFixed(6);
+          activeMarkerCard.querySelector('[data-field="lng"]').value = lng.toFixed(6);
+        }
+        if (map) {
+          if (currentLocationMarker) {
+            currentLocationMarker.remove();
+          }
+          currentLocationMarker = L.circleMarker([lat, lng], {
+            radius: 8,
+            color: '#F03228',
+            fillColor: '#F03228',
+            fillOpacity: 0.35,
+            weight: 2
+          }).addTo(map).bindPopup('Your location').openPopup();
+          map.setView([lat, lng], 17, { animate: true, duration: 0.8 });
+        }
       }, (error) => {
         alert('Unable to retrieve GPS location: ' + (error.message || 'unknown error'));
       }, {

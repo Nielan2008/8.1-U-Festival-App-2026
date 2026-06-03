@@ -41,8 +41,6 @@ $sections = loadJsonFile('info.json');
         </fieldset>
       <?php endforeach; ?>
     </div>
-  </form>
-</section>
     <div class="item-actions">
       <a href="info_add.php" class="cms-btn">➕ Add Section</a>
       <button type="submit">Save Info</button>
@@ -50,5 +48,4 @@ $sections = loadJsonFile('info.json');
   </form>
 </section>
 
-<?php require_once __DIR__ . '/../includes/footer.php'; ?>
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

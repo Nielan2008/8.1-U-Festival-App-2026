@@ -51,4 +51,3 @@ $newsItems = loadJsonFile('news.json');
   </form>
 </section>
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
-<?php require_once __DIR__ . '/../includes/footer.php'; ?>
