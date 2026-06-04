@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import MapSVG from '../components/MapSVG.jsx';
+import InteractiveMapCanvas from '../components/InteractiveMapCanvas.jsx';
+import MapBottomSheet from '../components/MapBottomSheet.jsx';
 import { useTranslation } from 'react-i18next';
 
 // Festival map page with location tracking and stage popup summaries.
 import { localize } from '../utils/dataStore.js';
+import mapData from '../data/map.json';
+import scheduleDataJson from '../data/schedule.json';
 
 export default function MapPage() {
   const { i18n, t } = useTranslation();
@@ -15,9 +18,9 @@ export default function MapPage() {
   const [anchors, setAnchors] = useState([]);
   const [scheduleData, setScheduleData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState(null);
+  const [selectedMarker, setSelectedMarker] = useState(null);
   const watchRef = useRef(null);
-  const mapSvgRef = useRef(null);
+  const mapCanvasRef = useRef(null);
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -50,7 +53,6 @@ export default function MapPage() {
   useEffect(() => {
     let mounted = true;
     setLoading(true);
-    setLoadError(null);
 
     Promise.all([
       fetch('/api/map', { credentials: 'include' }),
@@ -58,20 +60,31 @@ export default function MapPage() {
       fetch('/api/map-anchors', { credentials: 'include' })
     ])
       .then(async ([mapRes, scheduleRes, anchorsRes]) => {
-        if (!mapRes.ok) throw new Error(`Map request failed: ${mapRes.status}`);
-        if (!scheduleRes.ok) throw new Error(`Schedule request failed: ${scheduleRes.status}`);
-        const mapJson = await mapRes.json();
-        const scheduleJson = await scheduleRes.json();
-        const anchorsJson = anchorsRes.ok ? await anchorsRes.json() : [];
+        const mapJson = mapRes.ok ? await mapRes.json() : null;
+        const scheduleJson = scheduleRes.ok ? await scheduleRes.json() : null;
+        const anchorsJson = anchorsRes.ok ? await anchorsRes.json() : null;
         
         if (!mounted) return;
-        setLocations(Array.isArray(mapJson) ? mapJson : mapJson.locations || []);
-        setScheduleData(Array.isArray(scheduleJson) ? scheduleJson : []);
-        setAnchors(Array.isArray(anchorsJson) ? anchorsJson : []);
+
+        // Use API data if available, otherwise fall back to static data
+        setLocations(mapJson ? (Array.isArray(mapJson) ? mapJson : mapJson.locations || []) : mapData.locations || []);
+        setScheduleData(scheduleJson ? (Array.isArray(scheduleJson) ? scheduleJson : []) : scheduleDataJson.sat || []);
+        setAnchors(anchorsJson ? (Array.isArray(anchorsJson) ? anchorsJson : []) : [
+          { lat: 52.1605, lng: 5.1819, svg_x: 960, svg_y: 600, name: 'Rotterdam Center' },
+          { lat: 52.1705, lng: 5.1919, svg_x: 1400, svg_y: 300, name: 'Rotterdam North' }
+        ]);
       })
       .catch((err) => {
         console.error('Failed to load map page data:', err);
-        if (mounted) setLoadError(t('map.loadError'));
+        if (mounted) {
+          // On error, use static fallback data
+          setLocations(mapData.locations || []);
+          setScheduleData(scheduleDataJson.sat || []);
+          setAnchors([
+            { lat: 52.1605, lng: 5.1819, svg_x: 960, svg_y: 600, name: 'Rotterdam Center' },
+            { lat: 52.1705, lng: 5.1919, svg_x: 1400, svg_y: 300, name: 'Rotterdam North' }
+          ]);
+        }
       })
       .finally(() => {
         if (mounted) setLoading(false);
@@ -126,8 +139,8 @@ export default function MapPage() {
       (pos) => {
         const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         setPositions(coords);
-        if (mapSvgRef.current && typeof mapSvgRef.current.centerOnCoords === 'function') {
-          mapSvgRef.current.centerOnCoords(coords.lat, coords.lng);
+        if (mapCanvasRef.current && typeof mapCanvasRef.current.centerOnCoords === 'function') {
+          mapCanvasRef.current.centerOnCoords(coords.lat, coords.lng);
         }
       },
       (error) => {
@@ -137,34 +150,54 @@ export default function MapPage() {
     );
   };
 
+  /**
+   * Handle marker tap - find stage event data and open bottom sheet
+   */
+  const handleMarkerTap = (marker) => {
+    // Find corresponding stage event data
+    let stageEvent = null;
+    if (marker.type === 'stage' || marker.id === 'Ponton' || marker.id === 'The Lake' || marker.id === 'The Club' || marker.id === 'Hangar') {
+      const stageData = stageEvents.find((se) => se.id === marker.id || se.name === marker.id);
+      if (stageData) {
+        stageEvent = { current: stageData.current, next: stageData.next };
+      }
+    }
+    setSelectedMarker({ marker, stageEvent });
+  };
+
   const geolocationSupported = typeof navigator !== 'undefined' && Boolean(navigator.geolocation);
 
   if (loading) return <section className="map-page"><div className="map-loading">{t('map.loading')}</div></section>;
-  if (loadError) return <section className="map-page"><div className="map-error">{loadError}</div></section>;
 
   return (
     <section className="map-page">
-      <div className="map-button-row">
-        <button type="button" className="map-button" onClick={centerOnCurrent} disabled={!geolocationSupported}>
-          {t('map.centerButton')}
-        </button>
-      </div>
       <h1 className="section-title">{t('map.title')}</h1>
       <div className="map-wrapper">
-        <MapSVG
-          ref={mapSvgRef}
-          svgUrl="/kaart_festival_no_markers.svg"
-          locations={locations}
+        <InteractiveMapCanvas
+          ref={mapCanvasRef}
+          mapSvgUrl="/kaart_festival_no_markers.svg"
+          markers={locations}
           anchors={anchors}
-          stageEvents={stageEvents}
           position={positions}
-          onOpenArtist={(actId) => { if (actId) navigate(`/artist/${actId}`); }}
+          onMarkerTap={handleMarkerTap}
         />
+        {errorMessage && <div className="map-error">{errorMessage}</div>}
+        {!errorMessage && (
+          <div className="map-info">
+            <p>{positions ? t('map.locationAllowed') : t('map.locationDenied')}</p>
+            <span className="location-badge">{t('map.legendTitle')}</span>
+          </div>
+        )}
       </div>
-      <div className="map-info">
-        {errorMessage ? <div className="map-error">{errorMessage}</div> : <p>{positions ? t('map.locationAllowed') : t('map.locationDenied')}</p>}
-        <span className="location-badge">{t('map.legendTitle')}</span>
-      </div>
+
+      {/* Bottom sheet for marker details */}
+      {selectedMarker && (
+        <MapBottomSheet
+          marker={selectedMarker.marker}
+          stageEvent={selectedMarker.stageEvent}
+          onClose={() => setSelectedMarker(null)}
+        />
+      )}
     </section>
   );
 }
