@@ -9,11 +9,24 @@ import { localize } from '../utils/dataStore.js';
 import mapData from '../data/map.json';
 import scheduleDataJson from '../data/schedule.json';
 
-const normalizeLocation = (location) => ({
-  ...location,
-  x: location.x ?? location.svg_x ?? location.svgX ?? 0,
-  y: location.y ?? location.svg_y ?? location.svgY ?? 0,
-});
+const normalizeLocation = (location) => {
+  // Normalize SVG coordinates from various field names
+  const x = location.x ?? location.svg_x ?? location.svgX ?? 0;
+  const y = location.y ?? location.svg_y ?? location.svgY ?? 0;
+  
+  // Ensure icon has a valid path (default fallback)
+  let icon = location.icon || '/marker_stage1_ponton.svg';
+  if (!icon.startsWith('/')) {
+    icon = '/' + icon;
+  }
+  
+  return {
+    ...location,
+    x,
+    y,
+    icon
+  };
+};
 
 export default function MapPage() {
   const { i18n, t } = useTranslation();
@@ -40,13 +53,17 @@ export default function MapPage() {
         setErrorMessage('');
       },
       (error) => {
+        let msg = t('map.locationDenied');
         if (error.code === error.PERMISSION_DENIED) {
-          setErrorMessage(t('map.permissionDenied'));
+          msg = t('map.permissionDenied') + ' - Please enable location in browser settings.';
         } else if (error.code === error.POSITION_UNAVAILABLE) {
-          setErrorMessage(t('map.positionUnavailable'));
-        } else {
-          setErrorMessage(t('map.locationDenied'));
+          msg = t('map.positionUnavailable') + ' - GPS/location services unavailable.';
+        } else if (error.code === error.TIMEOUT) {
+          msg = 'Location request timed out. Please try again.';
+        } else if (error.code === error.UNKNOWN_ERROR) {
+          msg = 'Unknown location error. Ensure HTTPS is enabled and location services are available.';
         }
+        setErrorMessage(msg);
       },
       { enableHighAccuracy: true, maximumAge: 10000, timeout: 10000 }
     );

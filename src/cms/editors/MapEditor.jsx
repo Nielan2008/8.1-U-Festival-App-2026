@@ -140,8 +140,8 @@ export default function MapEditor(){
           const mark = document.createElement('img');
           mark.src = it.icon || '/marker_stage1_ponton.svg';
           mark.style.position = 'absolute';
-          mark.style.width = '36px';
-          mark.style.height = '36px';
+          mark.style.width = '18px';
+          mark.style.height = '18px';
           mark.style.transform = 'translate(-50%,-50%)';
           mark.style.pointerEvents = 'auto';
           mark.dataset.id = it.id;
@@ -310,7 +310,6 @@ export default function MapEditor(){
         <div className="form-row"><input className="input" placeholder="Name" value={form.name} onChange={(e)=>setForm({...form,name:e.target.value})} /></div>
         <div className="form-row"><label style={{minWidth:80,color:'var(--text)'}}>Language</label><select className="input" value={form.lang} onChange={(e)=>setForm({...form,lang:e.target.value})}><option value="en">English</option><option value="nl">Nederlands</option></select></div>
         <div className="form-row"><input className="input" placeholder="Type" value={form.type} onChange={(e)=>setForm({...form,type:e.target.value})} /></div>
-        <div className="form-row"><input className="input" placeholder="Latitude" value={form.lat} onChange={(e)=>setForm({...form,lat:e.target.value})} /><input className="input" placeholder="Longitude" value={form.lng} onChange={(e)=>setForm({...form,lng:e.target.value})} /></div>
         <div className="form-row"><input className="input" placeholder="Label NL" value={form.label_nl} onChange={(e)=>setForm({...form,label_nl:e.target.value})} /><input className="input" placeholder="Label EN" value={form.label_en} onChange={(e)=>setForm({...form,label_en:e.target.value})} /></div>
         <div className="form-row"><input className="input" placeholder="X (SVG)" value={form.x||''} readOnly /><input className="input" placeholder="Y (SVG)" value={form.y||''} readOnly /></div>
         <div className="form-row"><label style={{minWidth:80,color:'var(--text)'}}>Icon</label><select className="input" value={form.icon} onChange={(e)=>setForm({...form,icon:e.target.value})}>
@@ -329,9 +328,9 @@ export default function MapEditor(){
               </div>
               <p style={{margin:'8px 0 0 0',fontSize:13,color:'var(--muted)'}}>After dropping, drag the preview to fine-tune position. Click Save to persist X/Y.</p>
             </div>
-            <div style={{flex:1}}>
-              <p style={{margin:0}}>Click or drop on the map below to set the SVG X/Y coordinates for this point.</p>
-              <div id="cms-map-canvas" style={{height:320,marginTop:8,borderRadius:12,overflow:'hidden',background:'#071018'}} dangerouslySetInnerHTML={{__html:''}} />
+            <div style={{flex:1,display:'flex',flexDirection:'column'}}>
+              <p style={{margin:0}}>Click or drop on the map to position this marker. Full SVG map is shown below:</p>
+              <div id="cms-map-canvas" style={{flex:1,minHeight:400,marginTop:8,borderRadius:12,overflow:'auto',background:'#071018',position:'relative'}} dangerouslySetInnerHTML={{__html:''}} />
             </div>
           </div>
         </div>

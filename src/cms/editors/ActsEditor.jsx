@@ -73,14 +73,22 @@ export default function ActsEditor() {
 
       {editing ? (
         <div>
-          <div className="form-row"><input className="input" placeholder="Name" value={form.name} onChange={(e)=>setForm({...form,name:e.target.value})} /></div>
-          <div className="form-row"><input className="input" placeholder="Slug" value={form.slug} onChange={(e)=>setForm({...form,slug:e.target.value})} /></div>
-          <div className="form-row"><input className="input" placeholder="Genre" value={form.genre} onChange={(e)=>setForm({...form,genre:e.target.value})} /></div>
-          <div className="form-row"><input className="input" placeholder="YouTube URL" value={form.youtube} onChange={(e)=>setForm({...form,youtube:e.target.value})} /></div>
-          <div className="form-row"><input className="input" placeholder="Image URL" value={form.image_url} onChange={(e)=>setForm({...form,image_url:e.target.value})} /></div>
-          <div className="form-row"><label style={{minWidth:80,color:'var(--text)'}}>Language</label><select className="input" value={form.lang} onChange={(e)=>setForm({...form,lang:e.target.value})}><option value="en">English</option><option value="nl">Nederlands</option></select></div>
-          <div className="form-row"><textarea className="input" placeholder="Description NL" value={form.description.nl} onChange={(e)=>setForm({...form,description:{...form.description,nl:e.target.value}})} /></div>
-          <div className="form-row"><textarea className="input" placeholder="Description EN" value={form.description.en} onChange={(e)=>setForm({...form,description:{...form.description,en:e.target.value}})} /></div>
+          <div style={{marginBottom:'16px',paddingBottom:'12px',borderBottom:'1px solid var(--border)'}}>
+            <h4 style={{margin:'0 0 12px 0',color:'var(--text)'}}>Basic Information</h4>
+            <div className="form-row"><input className="input" placeholder="Name" value={form.name} onChange={(e)=>setForm({...form,name:e.target.value})} /></div>
+            <div className="form-row"><input className="input" placeholder="Slug" value={form.slug} onChange={(e)=>setForm({...form,slug:e.target.value})} /></div>
+            <div className="form-row"><input className="input" placeholder="Genre" value={form.genre} onChange={(e)=>setForm({...form,genre:e.target.value})} /></div>
+          </div>
+          <div style={{marginBottom:'16px',paddingBottom:'12px',borderBottom:'1px solid var(--border)'}}>
+            <h4 style={{margin:'0 0 12px 0',color:'var(--text)'}}>Media</h4>
+            <div className="form-row"><input className="input" placeholder="YouTube URL" value={form.youtube} onChange={(e)=>setForm({...form,youtube:e.target.value})} /></div>
+            <div className="form-row"><input className="input" placeholder="Image URL" value={form.image_url} onChange={(e)=>setForm({...form,image_url:e.target.value})} /></div>
+          </div>
+          <div style={{marginBottom:'16px',paddingBottom:'12px',borderBottom:'1px solid var(--border)'}}>
+            <h4 style={{margin:'0 0 12px 0',color:'var(--text)'}}>Description (Multilingual)</h4>
+            <div className="form-row"><textarea className="input" placeholder="Description (NL)" value={form.description.nl} onChange={(e)=>setForm({...form,description:{...form.description,nl:e.target.value}})} style={{minHeight:'100px'}} /></div>
+            <div className="form-row"><textarea className="input" placeholder="Description (EN)" value={form.description.en} onChange={(e)=>setForm({...form,description:{...form.description,en:e.target.value}})} style={{minHeight:'100px'}} /></div>
+          </div>
           <div className="form-row"><button className="button" onClick={save}>Save</button> <button className="button ghost" onClick={()=>setEditing(null)}>Cancel</button></div>
         </div>
       ) : null}

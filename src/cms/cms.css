@@ -1,5 +1,18 @@
 :root{
-  /* CMS uses a dark-themed palette to ensure high contrast */
+  /* Light theme (default) */
+  --bg:#f8f7f4;
+  --panel:#ffffff;
+  --surface:#ffffff;
+  --muted:#4f4f4f;
+  --accent:#10b981;
+  --danger:#ef4444;
+  --text:#000000;
+  --input-bg:#f8f7f4;
+  --input-border:rgba(0,0,0,0.12);
+}
+
+body.theme-dark {
+  /* Dark theme */
   --bg:#0b1220;
   --panel:#0f1724;
   --surface:#0f1724;
@@ -26,6 +39,6 @@
 .spinner{width:28px;height:28px;border-radius:50%;border:4px solid rgba(255,255,255,0.06);border-top-color:var(--accent);animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .small{font-size:13px;color:var(--muted)}
-.cms-map-sidebar img{cursor:grab;border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:6px;background:var(--input-bg)}
-.cms-map-sidebar img:active{cursor:grabbing}
+#cms-map-canvas{display:flex;align-items:center;justify-content:center}
+#cms-map-canvas svg{max-width:100%;height:auto;flex-shrink:0}
 #cms-map-canvas img#cms-drop-preview{width:40px;height:40px;pointer-events:auto;border-radius:6px;border:1px solid rgba(255,255,255,0.06)}

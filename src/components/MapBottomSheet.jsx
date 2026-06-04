@@ -184,7 +184,11 @@ export default function MapBottomSheet({ marker, stageEvent, onClose }) {
         {!isStage && (
           <div className="sheet-poi-details">
             {marker.description && (
-              <p className="poi-description">{marker.description}</p>
+              <p className="poi-description">
+                {typeof marker.description === 'object'
+                  ? marker.description[i18n.language] || marker.description.en || marker.description.nl || 'No information'
+                  : marker.description}
+              </p>
             )}
             {!marker.description && (
               <p className="poi-description-empty">

@@ -359,11 +359,14 @@ const InteractiveMapCanvas = React.forwardRef(function InteractiveMapCanvas(
 
   const renderMarkerIcon = (marker, markerSize) => {
     const iconKey = marker.id || marker.label || `${marker.x}-${marker.y}`;
+    const markerLabel = typeof marker.label === 'string' ? marker.label : (marker.label?.en || marker.label || marker.name || 'Location');
+    
     if (!marker.icon || failedIconIds[iconKey]) {
-      const fallbackLabel = marker.type === 'stage' ? (marker.id || marker.name || '★') : (marker.label?.en || marker.label || 'POI');
+      // Proper fallback marker with emoji (no arbitrary letters)
+      const emoji = marker.type === 'stage' ? '🎭' : '📍';
       return (
-        <div className="marker-fallback" style={{ width: markerSize, height: markerSize }}>
-          <span>{typeof fallbackLabel === 'string' ? fallbackLabel.charAt(0) : '•'}</span>
+        <div className="marker-fallback" style={{ width: markerSize, height: markerSize }} title={markerLabel}>
+          {emoji}
         </div>
       );
     }
@@ -371,10 +374,11 @@ const InteractiveMapCanvas = React.forwardRef(function InteractiveMapCanvas(
     return (
       <img
         src={marker.icon}
-        alt={typeof marker.label === 'string' ? marker.label : marker.label?.en || marker.name || 'Marker'}
+        alt={markerLabel}
         className="marker-icon"
         draggable="false"
         onError={() => setFailedIconIds((prev) => ({ ...prev, [iconKey]: true }))}
+        style={{ width: markerSize, height: markerSize }}
       />
     );
   };
@@ -427,8 +431,8 @@ const InteractiveMapCanvas = React.forwardRef(function InteractiveMapCanvas(
         {markers.map((marker) => {
           const { x, y } = getMarkerPosition(marker);
           const screenCoords = getScreenCoordinates(x, y);
-          const markerScale = 1 / scale;
-          const markerSize = 36;
+          const markerSize = 22;
+          const markerLabel = typeof marker.label === 'string' ? marker.label : (marker.label?.en || marker.label || marker.name);
 
           return (
             <button
@@ -438,13 +442,13 @@ const InteractiveMapCanvas = React.forwardRef(function InteractiveMapCanvas(
               style={{
                 left: `${screenCoords.x}px`,
                 top: `${screenCoords.y}px`,
-                transform: `translate(-50%, -50%) scale(${markerScale})`,
+                transform: 'translate(-50%, -50%)',
                 width: markerSize,
                 height: markerSize
               }}
               onClick={() => onMarkerTap(marker)}
-              title={typeof marker.label === 'string' ? marker.label : marker.label?.en || marker.name}
-              aria-label={typeof marker.label === 'string' ? marker.label : marker.label?.en || marker.name}
+              title={markerLabel}
+              aria-label={markerLabel}
             >
               {renderMarkerIcon(marker, markerSize)}
             </button>
