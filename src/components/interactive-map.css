@@ -121,6 +121,31 @@ body.theme-dark {
   border-radius: 50%;
 }
 
+/* Inline SVG based marker container */
+.marker-inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #ef4444; /* red outer */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  pointer-events: none;
+}
+
+.marker-inner-core {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.2);
+}
+
+.icon-svg {
+  width: 60%;
+  height: 60%;
+  display: block;
+}
+
 .marker-default {
   font-size: 24px;
   line-height: 1;

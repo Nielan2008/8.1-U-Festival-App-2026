@@ -315,9 +315,12 @@ const InteractiveMapCanvas = React.forwardRef(function InteractiveMapCanvas(
   const getScreenCoordinates = useCallback(
     (svgX, svgY) => {
       const totalScale = baseScale * scale;
+      // Account for SVG viewBox origin (viewBox.x / viewBox.y)
+      const localX = svgX - (viewBox.x || 0);
+      const localY = svgY - (viewBox.y || 0);
       return {
-        x: svgX * totalScale + tx,
-        y: svgY * totalScale + ty
+        x: localX * totalScale + tx,
+        y: localY * totalScale + ty
       };
     },
     [baseScale, scale, tx, ty]
@@ -358,28 +361,48 @@ const InteractiveMapCanvas = React.forwardRef(function InteractiveMapCanvas(
   }
 
   const renderMarkerIcon = (marker, markerSize) => {
-    const iconKey = marker.id || marker.label || `${marker.x}-${marker.y}`;
     const markerLabel = typeof marker.label === 'string' ? marker.label : (marker.label?.en || marker.label || marker.name || 'Location');
-    
-    if (!marker.icon || failedIconIds[iconKey]) {
-      // Proper fallback marker with emoji (no arbitrary letters)
-      const emoji = marker.type === 'stage' ? '🎭' : '📍';
+
+    // Outer circular container (red) with inner darker circle and an inline SVG icon centered
+    const innerSize = Math.round(markerSize * 0.6);
+
+    const renderSvgForType = (type) => {
+      // Simple inline SVG icons (viewBox 0 0 24 24) — keeps styling consistent and scales
+      if (type === 'stage') {
+        return (
+          <svg className="icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path fill="white" d="M12 2c-1.1 0-2 .9-2 2v2H6v2h8V6c0-1.1-.9-2-2-2zM4 10v6h16v-6H4zm2 2h12v2H6v-2z" />
+          </svg>
+        );
+      }
+      if (type === 'bar') {
+        return (
+          <svg className="icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path fill="white" d="M7 2v11h3v9l5-3v-6h3V2H7z" />
+          </svg>
+        );
+      }
+      if (type === 'food') {
+        return (
+          <svg className="icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path fill="white" d="M7 2v11h3V2H7zm7 0v11h3V2h-3zM3 14h18v2H3v-2z" />
+          </svg>
+        );
+      }
+      // default pin / POI icon
       return (
-        <div className="marker-fallback" style={{ width: markerSize, height: markerSize }} title={markerLabel}>
-          {emoji}
-        </div>
+        <svg className="icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path fill="white" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z" />
+        </svg>
       );
-    }
+    };
 
     return (
-      <img
-        src={marker.icon}
-        alt={markerLabel}
-        className="marker-icon"
-        draggable="false"
-        onError={() => setFailedIconIds((prev) => ({ ...prev, [iconKey]: true }))}
-        style={{ width: markerSize, height: markerSize }}
-      />
+      <div className="marker-inner" style={{ width: markerSize, height: markerSize }} title={markerLabel} aria-label={markerLabel}>
+        <div className="marker-inner-core" style={{ width: innerSize, height: innerSize }}>
+          {renderSvgForType(marker.type)}
+        </div>
+      </div>
     );
   };
 

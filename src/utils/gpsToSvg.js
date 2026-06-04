@@ -15,39 +15,45 @@ export function createGpsTransform(anchors) {
     return null;
   }
 
-  // Sort by latitude for north-south mapping
-  const byLat = [...anchors].sort((a, b) => b.lat - a.lat);
-  const northAnchor = byLat[0];
-  const southAnchor = byLat[byLat.length - 1];
+  // compute min/max lat/lng
+  const latVals = anchors.map((a) => a.lat);
+  const lngVals = anchors.map((a) => a.lng);
+  const minLat = Math.min(...latVals);
+  const maxLat = Math.max(...latVals);
+  const minLng = Math.min(...lngVals);
+  const maxLng = Math.max(...lngVals);
 
-  // Sort by longitude for east-west mapping
-  const byLng = [...anchors].sort((a, b) => a.lng - b.lng);
-  const westAnchor = byLng[0];
-  const eastAnchor = byLng[byLng.length - 1];
+  const pickClosest = (arr, key, value) => {
+    let best = arr[0];
+    let bestDist = Math.abs(arr[0][key] - value);
+    for (let i = 1; i < arr.length; i++) {
+      const d = Math.abs(arr[i][key] - value);
+      if (d < bestDist) {
+        best = arr[i];
+        bestDist = d;
+      }
+    }
+    return best;
+  };
+
+  const topAnchor = pickClosest(anchors, 'lat', maxLat);
+  const bottomAnchor = pickClosest(anchors, 'lat', minLat);
+  const leftAnchor = pickClosest(anchors, 'lng', minLng);
+  const rightAnchor = pickClosest(anchors, 'lng', maxLng);
+
+  const latRange = maxLat - minLat || 1;
+  const lngRange = maxLng - minLng || 1;
+  const svgYRange = (bottomAnchor.svg_y - topAnchor.svg_y) || 1;
+  const svgXRange = (rightAnchor.svg_x - leftAnchor.svg_x) || 1;
 
   return {
-    /**
-     * Convert GPS latitude to SVG Y coordinate
-     */
     latToSvgY: (lat) => {
-      if (northAnchor.lat === southAnchor.lat) {
-        return (northAnchor.svg_y + southAnchor.svg_y) / 2;
-      }
-      // Linear interpolation
-      const ratio = (lat - northAnchor.lat) / (southAnchor.lat - northAnchor.lat);
-      return northAnchor.svg_y + ratio * (southAnchor.svg_y - northAnchor.svg_y);
+      const t = (lat - maxLat) / (minLat - maxLat);
+      return topAnchor.svg_y + t * svgYRange;
     },
-
-    /**
-     * Convert GPS longitude to SVG X coordinate
-     */
     lngToSvgX: (lng) => {
-      if (westAnchor.lng === eastAnchor.lng) {
-        return (westAnchor.svg_x + eastAnchor.svg_x) / 2;
-      }
-      // Linear interpolation
-      const ratio = (lng - westAnchor.lng) / (eastAnchor.lng - westAnchor.lng);
-      return westAnchor.svg_x + ratio * (eastAnchor.svg_x - westAnchor.svg_x);
+      const t = (lng - minLng) / lngRange;
+      return leftAnchor.svg_x + t * svgXRange;
     }
   };
 }
