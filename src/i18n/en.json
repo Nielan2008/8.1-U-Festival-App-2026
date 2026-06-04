@@ -56,7 +56,11 @@
     "popupNone": "No act now",
     "popupNext": "Next",
     "openArtist": "Open artist",
-    "currentAct": "Current act"
+    "currentAct": "Current act",
+    "errorLoadingSvg": "Unable to load map graphics.",
+    "loadingSvg": "Loading map graphics...",
+    "gpsOnscreen": "Your location",
+    "gpsOffscreen": "Your location is outside the visible map"
   },
   "info": {
     "title": "Practical information",

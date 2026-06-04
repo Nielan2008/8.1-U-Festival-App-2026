@@ -26,29 +26,41 @@ export default React.forwardRef(function MapSVG({ svgUrl, locations = [], stageE
   const containerRef = useRef(null);
   const svgRef = useRef(null);
   const [svgText, setSvgText] = useState(null);
+  const [svgError, setSvgError] = useState(false);
   const [viewBox, setViewBox] = useState({ width: 1000, height: 600 });
   const [baseScale, setBaseScale] = useState(1);
   const [scale, setScale] = useState(1);
   const [tx, setTx] = useState(0);
   const [ty, setTy] = useState(0);
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
   const dragging = useRef(false);
   const lastPos = useRef([0, 0]);
   const pinch = useRef(null);
   const [popup, setPopup] = useState(null);
 
   useEffect(() => {
-    fetch(svgUrl).then((r) => r.text()).then((text) => {
-      const svgWithAspect = addPreserveAspectRatio(text);
-      setSvgText(svgWithAspect);
-      const vb = parseViewBox(svgWithAspect);
-      if (vb) setViewBox({ width: vb.width, height: vb.height });
-    }).catch(() => {});
+    setSvgError(false);
+    fetch(svgUrl)
+      .then((r) => {
+        if (!r.ok) throw new Error('SVG fetch failed');
+        return r.text();
+      })
+      .then((text) => {
+        const svgWithAspect = addPreserveAspectRatio(text);
+        setSvgText(svgWithAspect);
+        const vb = parseViewBox(svgWithAspect);
+        if (vb) setViewBox({ width: vb.width, height: vb.height });
+      })
+      .catch(() => {
+        setSvgError(true);
+      });
   }, [svgUrl]);
 
   useEffect(() => {
     const updateBaseScale = () => {
       if (!containerRef.current || !viewBox.width || !viewBox.height) return;
       const rect = containerRef.current.getBoundingClientRect();
+      setContainerSize({ width: rect.width, height: rect.height });
       const newBase = Math.min(rect.width / viewBox.width, rect.height / viewBox.height);
       setBaseScale(newBase || 1);
     };
@@ -204,7 +216,13 @@ export default React.forwardRef(function MapSVG({ svgUrl, locations = [], stageE
 
   return (
     <div className="map-svg-container" ref={containerRef} onMouseDown={onPointerDown} onTouchStart={onPointerDown} onTouchMove={onTouchMove}>
-      <div className="map-svg-viewport" style={{ transform: `translate(${tx}px, ${ty}px) scale(${scale})` }} dangerouslySetInnerHTML={svgText ? { __html: svgText } : undefined} ref={svgRef} />
+      {svgText && !svgError ? (
+        <div className="map-svg-viewport" style={{ transform: `translate(${tx}px, ${ty}px) scale(${scale})` }} dangerouslySetInnerHTML={{ __html: svgText }} ref={svgRef} />
+      ) : (
+        <div className="map-fallback">
+          <div className="map-fallback-text">{svgError ? t('map.errorLoadingSvg') : t('map.loadingSvg')}</div>
+        </div>
+      )}
       {/* markers layer (does not scale) */}
       <div className="map-markers" style={{ transform: `translate(${tx}px, ${ty}px)` }}>
         {locations.map((loc) => {
@@ -225,8 +243,20 @@ export default React.forwardRef(function MapSVG({ svgUrl, locations = [], stageE
         })}
         {position ? (() => {
           const pt = toSvgPoint(position.lat, position.lng);
-          const screen = { left: pt.x * actualScale, top: pt.y * actualScale };
-          return <div className="map-gps-dot" style={{ left: `${screen.left}px`, top: `${screen.top}px` }} />;
+          const rawLeft = pt.x * actualScale + tx;
+          const rawTop = pt.y * actualScale + ty;
+          const clampedLeft = Math.min(Math.max(rawLeft, 12), containerSize.width ? containerSize.width - 12 : rawLeft);
+          const clampedTop = Math.min(Math.max(rawTop, 12), containerSize.height ? containerSize.height - 12 : rawTop);
+          const isOutOfBounds = rawLeft < 0 || rawLeft > (containerSize.width || 0) || rawTop < 0 || rawTop > (containerSize.height || 0);
+          const localLeft = clampedLeft - tx;
+          const localTop = clampedTop - ty;
+          return (
+            <div
+              className={`map-gps-dot ${isOutOfBounds ? 'out-of-bounds' : ''}`}
+              style={{ left: `${localLeft}px`, top: `${localTop}px` }}
+              title={isOutOfBounds ? t('map.gpsOffscreen') : t('map.gpsOnscreen')}
+            />
+          );
         })() : null}
       </div>
 

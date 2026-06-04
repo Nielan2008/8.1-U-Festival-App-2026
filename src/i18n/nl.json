@@ -56,7 +56,11 @@
     "popupNone": "Geen act nu",
     "popupNext": "Volgende",
     "openArtist": "Open artiest",
-    "currentAct": "Huidig optreden"
+    "currentAct": "Huidig optreden",
+    "errorLoadingSvg": "Kan kaartgrafieken niet laden.",
+    "loadingSvg": "Kaartgrafieken laden...",
+    "gpsOnscreen": "Je locatie",
+    "gpsOffscreen": "Je locatie bevindt zich buiten de zichtbare kaart"
   },
   "info": {
     "title": "Praktische informatie",
