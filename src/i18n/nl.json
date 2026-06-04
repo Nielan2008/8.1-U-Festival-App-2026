@@ -60,7 +60,13 @@
     "errorLoadingSvg": "Kan kaartgrafieken niet laden.",
     "loadingSvg": "Kaartgrafieken laden...",
     "gpsOnscreen": "Je locatie",
-    "gpsOffscreen": "Je locatie bevindt zich buiten de zichtbare kaart"
+    "gpsOffscreen": "Je locatie bevindt zich buiten de zichtbare kaart",
+    "nowPlaying": "Nu aan het spelen",
+    "nextUp": "Volgende",
+    "endsIn": "Eindigt in",
+    "startsIn": "Begint in",
+    "noScheduled": "Geen optredens gepland",
+    "viewSchedule": "Volledig programma weergeven"
   },
   "info": {
     "title": "Praktische informatie",

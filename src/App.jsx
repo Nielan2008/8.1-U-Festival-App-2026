@@ -19,6 +19,7 @@ import NewsEditor from './cms/editors/NewsEditor.jsx';
 import ScheduleEditor from './cms/editors/ScheduleEditor.jsx';
 import InfoEditor from './cms/editors/InfoEditor.jsx';
 import MapEditor from './cms/editors/MapEditor.jsx';
+import AnchorsEditor from './cms/editors/AnchorsEditor.jsx';
 import Navbar from './components/Navbar.jsx';
 import LangToggle from './components/LangToggle.jsx';
 import ThemeToggle from './components/ThemeToggle.jsx';
@@ -96,6 +97,7 @@ function AppShell() {
             <Route path="/cms/schedule" element={<ProtectedRoute><ScheduleEditor /></ProtectedRoute>} />
             <Route path="/cms/info" element={<ProtectedRoute><InfoEditor /></ProtectedRoute>} />
             <Route path="/cms/map" element={<ProtectedRoute><MapEditor /></ProtectedRoute>} />
+            <Route path="/cms/anchors" element={<ProtectedRoute><AnchorsEditor /></ProtectedRoute>} />
             <Route path="*" element={<Home />} />
           </Routes>
         </PageTransition>

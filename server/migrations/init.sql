@@ -55,3 +55,15 @@ CREATE TABLE IF NOT EXISTS map_points (
   type VARCHAR(100),
   description TEXT
 );
+
+-- GPS anchor points for mapping real-world coordinates to SVG map coordinates
+CREATE TABLE IF NOT EXISTS map_anchors (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(200),
+  lat DECIMAL(10,7) NOT NULL,
+  lng DECIMAL(10,7) NOT NULL,
+  svg_x INTEGER NOT NULL,
+  svg_y INTEGER NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);

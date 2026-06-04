@@ -9,9 +9,10 @@ import { localize } from '../utils/dataStore.js';
 export default function MapPage() {
   const { i18n, t } = useTranslation();
   const navigate = useNavigate();
-  const [position, setPosition] = useState(null);
+  const [positions, setPositions] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
   const [locations, setLocations] = useState([]);
+  const [anchors, setAnchors] = useState([]);
   const [scheduleData, setScheduleData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
@@ -26,7 +27,7 @@ export default function MapPage() {
 
     watchRef.current = navigator.geolocation.watchPosition(
       (pos) => {
-        setPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setPositions({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setErrorMessage('');
       },
       (error) => {
@@ -53,15 +54,20 @@ export default function MapPage() {
 
     Promise.all([
       fetch('/api/map', { credentials: 'include' }),
-      fetch('/api/schedule', { credentials: 'include' })
+      fetch('/api/schedule', { credentials: 'include' }),
+      fetch('/api/map-anchors', { credentials: 'include' })
     ])
-      .then(async ([mapRes, scheduleRes]) => {
+      .then(async ([mapRes, scheduleRes, anchorsRes]) => {
         if (!mapRes.ok) throw new Error(`Map request failed: ${mapRes.status}`);
         if (!scheduleRes.ok) throw new Error(`Schedule request failed: ${scheduleRes.status}`);
-        const [mapJson, scheduleJson] = await Promise.all([mapRes.json(), scheduleRes.json()]);
+        const mapJson = await mapRes.json();
+        const scheduleJson = await scheduleRes.json();
+        const anchorsJson = anchorsRes.ok ? await anchorsRes.json() : [];
+        
         if (!mounted) return;
         setLocations(Array.isArray(mapJson) ? mapJson : mapJson.locations || []);
         setScheduleData(Array.isArray(scheduleJson) ? scheduleJson : []);
+        setAnchors(Array.isArray(anchorsJson) ? anchorsJson : []);
       })
       .catch((err) => {
         console.error('Failed to load map page data:', err);
@@ -119,7 +125,7 @@ export default function MapPage() {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        setPosition(coords);
+        setPositions(coords);
         if (mapSvgRef.current && typeof mapSvgRef.current.centerOnCoords === 'function') {
           mapSvgRef.current.centerOnCoords(coords.lat, coords.lng);
         }
@@ -149,13 +155,14 @@ export default function MapPage() {
           ref={mapSvgRef}
           svgUrl="/kaart_festival_no_markers.svg"
           locations={locations}
+          anchors={anchors}
           stageEvents={stageEvents}
-          position={position}
+          position={positions}
           onOpenArtist={(actId) => { if (actId) navigate(`/artist/${actId}`); }}
         />
       </div>
       <div className="map-info">
-        {errorMessage ? <div className="map-error">{errorMessage}</div> : <p>{position ? t('map.locationAllowed') : t('map.locationDenied')}</p>}
+        {errorMessage ? <div className="map-error">{errorMessage}</div> : <p>{positions ? t('map.locationAllowed') : t('map.locationDenied')}</p>}
         <span className="location-badge">{t('map.legendTitle')}</span>
       </div>
     </section>

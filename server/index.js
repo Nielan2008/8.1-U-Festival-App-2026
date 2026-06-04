@@ -375,6 +375,52 @@ app.delete('/api/schedule/:id', requireAuth, async (req, res) => {
   }
 });
 
+// ─── Map Anchors ─────────────────────────────────────────────────────────────
+
+// PUBLIC - get all GPS anchor points for map coordinate mapping
+app.get('/api/map-anchors', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM map_anchors ORDER BY created_at');
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: String(err) });
+  }
+});
+
+// PROTECTED - add new GPS anchor point
+app.post('/api/map-anchors', requireAuth, async (req, res) => {
+  try {
+    const { name, lat, lng, svg_x, svg_y } = req.body;
+    const q = 'INSERT INTO map_anchors (name, lat, lng, svg_x, svg_y) VALUES ($1,$2,$3,$4,$5) RETURNING *';
+    const r = await pool.query(q, [name || null, lat, lng, svg_x, svg_y]);
+    res.json(r.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: String(err) });
+  }
+});
+
+// PROTECTED - update GPS anchor point
+app.put('/api/map-anchors/:id', requireAuth, async (req, res) => {
+  try {
+    const { name, lat, lng, svg_x, svg_y } = req.body;
+    const q = 'UPDATE map_anchors SET name=$1, lat=$2, lng=$3, svg_x=$4, svg_y=$5, updated_at=NOW() WHERE id=$6 RETURNING *';
+    const r = await pool.query(q, [name || null, lat, lng, svg_x, svg_y, req.params.id]);
+    res.json(r.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: String(err) });
+  }
+});
+
+// PROTECTED - delete GPS anchor point
+app.delete('/api/map-anchors/:id', requireAuth, async (req, res) => {
+  try {
+    await pool.query('DELETE FROM map_anchors WHERE id=$1', [req.params.id]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: String(err) });
+  }
+});
+
 // ─── SPA fallback ────────────────────────────────────────────────────────────
 
 if (process.env.NODE_ENV === 'production') {

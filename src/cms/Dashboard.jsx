@@ -15,9 +15,10 @@ export default function Dashboard() {
       fetch('/api/acts', { credentials: 'include' }).then(r => r.json()),
       fetch('/api/schedule', { credentials: 'include' }).then(r => r.json()),
       fetch('/api/info', { credentials: 'include' }).then(r => r.json()),
-      fetch('/api/map', { credentials: 'include' }).then(r => r.json())
-    ]).then(([news, acts, schedule, info, map]) => {
-      setCounts({ news: news.length, acts: acts.length, schedule: schedule.length, info: info.length, map: map.length });
+      fetch('/api/map', { credentials: 'include' }).then(r => r.json()),
+      fetch('/api/map-anchors', { credentials: 'include' }).then(r => r.json())
+    ]).then(([news, acts, schedule, info, map, anchors]) => {
+      setCounts({ news: news.length, acts: acts.length, schedule: schedule.length, info: info.length, map: map.length, anchors: anchors.length });
     }).catch((e) => setError('Failed to load counts'));
   }, []);
 
@@ -41,6 +42,7 @@ export default function Dashboard() {
         <NavLink to="/cms/schedule">Schedule ({counts.schedule ?? '...'})</NavLink>
         <NavLink to="/cms/info">Info ({counts.info ?? '...'})</NavLink>
         <NavLink to="/cms/map">Map ({counts.map ?? '...'})</NavLink>
+        <NavLink to="/cms/anchors">GPS Anchors ({counts.anchors ?? '...'})</NavLink>
       </div>
       {error ? <div className="message error">{error}</div> : null}
     </div>

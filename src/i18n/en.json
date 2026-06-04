@@ -60,7 +60,13 @@
     "errorLoadingSvg": "Unable to load map graphics.",
     "loadingSvg": "Loading map graphics...",
     "gpsOnscreen": "Your location",
-    "gpsOffscreen": "Your location is outside the visible map"
+    "gpsOffscreen": "Your location is outside the visible map",
+    "nowPlaying": "Now playing",
+    "nextUp": "Next up",
+    "endsIn": "Ends in",
+    "startsIn": "Starts in",
+    "noScheduled": "No shows scheduled",
+    "viewSchedule": "View full schedule"
   },
   "info": {
     "title": "Practical information",
