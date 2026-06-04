@@ -68,7 +68,7 @@ function AppShell() {
           <p className="hero-copy">{t('hero.subtitle')}</p>
         </div>
         <div className="top-controls">
-          <LangToggle currentLang={i18n.language} onLanguageChange={(lang) => i18n.changeLanguage(lang)} />
+          <LangToggle currentLang={i18n.language} onLanguageChange={(lang) => { i18n.changeLanguage(lang); window.localStorage.setItem('loveu-lang', lang); }} />
           <ThemeToggle theme={theme} onToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')} />
         </div>
       </header>

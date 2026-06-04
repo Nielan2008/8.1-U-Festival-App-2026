@@ -10,7 +10,7 @@ const resources = {
 
 i18n.use(initReactI18next).init({
   resources,
-  lng: 'nl',
+  lng: (window && window.localStorage && window.localStorage.getItem('loveu-lang')) || 'nl',
   fallbackLng: 'en',
   interpolation: {
     escapeValue: false

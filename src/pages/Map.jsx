@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import L from 'leaflet';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { createStageMarker } from '../components/MapMarker.jsx';
+import MapSVG from '../components/MapSVG.jsx';
 import { useTranslation } from 'react-i18next';
 import { localize } from '../utils/dataStore.js';
 
@@ -28,6 +26,7 @@ export default function MapPage() {
   const [loadError, setLoadError] = useState(null);
   const watchRef = useRef(null);
   const mapRef = useRef(null);
+  const mapSvgRef = useRef(null);
   const center = [51.9845, 5.0540];
 
   useEffect(() => {
@@ -142,7 +141,9 @@ export default function MapPage() {
       (pos) => {
         const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         setPosition(coords);
-        mapRef.current.flyTo([coords.lat, coords.lng], 17, { duration: 0.8 });
+        if (mapSvgRef.current && typeof mapSvgRef.current.centerOnCoords === 'function') {
+          mapSvgRef.current.centerOnCoords(coords.lat, coords.lng);
+        }
       },
       (error) => {
         setErrorMessage(error.message || t('map.locationDenied'));
@@ -153,13 +154,8 @@ export default function MapPage() {
 
   const geolocationSupported = typeof navigator !== 'undefined' && Boolean(navigator.geolocation);
 
-  if (loading) {
-    return <section className="map-page"><div className="map-loading">Loading map…</div></section>;
-  }
-
-  if (loadError) {
-    return <section className="map-page"><div className="map-error">{loadError}</div></section>;
-  }
+  if (loading) return <section className="map-page"><div className="map-loading">Loading map…</div></section>;
+  if (loadError) return <section className="map-page"><div className="map-error">{loadError}</div></section>;
 
   return (
     <section className="map-page">
@@ -170,23 +166,7 @@ export default function MapPage() {
       </div>
       <h1 className="section-title">{t('map.title')}</h1>
       <div className="map-wrapper">
-        <MapContainer center={center} zoom={16} scrollWheelZoom style={{ height: '100%', width: '100%' }} whenCreated={(mapInstance) => { mapRef.current = mapInstance; }}>
-          <TileLayer
-            attribution='&copy; OpenStreetMap contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          {stageEvents.map((location) => (
-            <Marker key={location.id} position={[location.lat, location.lng]} icon={createStageMarker(location.label)}>
-              <Popup>
-                <strong>{location.label}</strong>
-                <p>{localize(location.description || location.info, i18n.language)}</p>
-                {location.current ? <p><strong>{t('map.currentAct')}:</strong> {location.current.title} ({location.current.start})</p> : <p>{t('schedule.noEvents')}</p>}
-                {location.next ? <p><strong>{t('schedule.nextUp')}:</strong> {location.next.title} ({location.next.start})</p> : null}
-              </Popup>
-            </Marker>
-          ))}
-          {position ? <CurrentLocationMarker position={position} /> : null}
-        </MapContainer>
+        <MapSVG ref={mapSvgRef} svgUrl="/kaart_festival_no_markers.svg" locations={locations} stageEvents={stageEvents} position={position} />
       </div>
       <div className="map-info">
         {errorMessage ? <div className="map-error">{errorMessage}</div> : <p>{position ? t('map.locationAllowed') : t('map.locationDenied')}</p>}

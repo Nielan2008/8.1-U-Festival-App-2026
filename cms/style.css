@@ -1,14 +1,14 @@
 :root {
-  color-scheme: light;
+  color-scheme: dark;
   font-family: 'Sansation', sans-serif;
-  background: #F2F4F8;
-  color: #111111;
+  background: #071018;
+  color: #FFFFFF;
   --color-accent: #F03228;
   --color-secondary: #247BA0;
   --color-info: #E3B505;
-  --surface: #FFFFFF;
-  --border: rgba(17,24,39,0.08);
-  --muted: #4B5563;
+  --surface: #0f1724;
+  --border: rgba(255,255,255,0.06);
+  --muted: #9CA3AF;
 }
 
 * {
@@ -18,8 +18,8 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background: radial-gradient(circle at top left, rgba(240,50,40,0.15), transparent 40%), #F2F4F8;
-  color: #111111;
+  background: radial-gradient(circle at top left, rgba(240,50,40,0.05), transparent 40%), #071018;
+  color: var(--text, #FFFFFF);
 }
 
 a,
@@ -146,11 +146,11 @@ html[data-theme='dark'] button.language-button {
 .cms-shell {
   max-width: 1180px;
   margin: 0 auto;
-  padding: 1.25rem;
+  padding: 0.75rem;
   background: var(--surface);
-  color: #111111;
+  color: #FFFFFF;
   border-radius: 24px;
-  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 10px 30px rgba(2,6,23,0.6);
 }
 
 .cms-header {
@@ -239,7 +239,7 @@ html[data-theme='dark'] button.language-button {
 label {
   display: grid;
   gap: 0.35rem;
-  color: #111111;
+  color: #FFFFFF;
   font-size: 0.95rem;
 }
 
@@ -247,11 +247,11 @@ input,
 textarea,
 select {
   width: 100%;
-  background: #FFFFFF;
+  background: #071826;
   padding: 0.95rem 0.9rem;
-  border-radius: 16px;
-  border: 1px solid rgba(17,24,39,0.12);
-  color: #111111;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  color: #FFFFFF;
 }
 
 textarea {
