@@ -49,6 +49,13 @@
     "permissionDenied": "Toegang tot locatie geweigerd.",
     "positionUnavailable": "Locatie is tijdelijk niet beschikbaar.",
     "geolocationUnsupported": "Geolocatie wordt niet ondersteund in deze browser.",
+    "loading": "Kaart laden…",
+    "loadError": "Kan kaartgegevens niet laden.",
+    "legendTitle": "Podiumlegenda",
+    "popupNow": "Nu",
+    "popupNone": "Geen act nu",
+    "popupNext": "Volgende",
+    "openArtist": "Open artiest",
     "currentAct": "Huidig optreden"
   },
   "info": {
@@ -64,7 +71,11 @@
   },
   "home": {
     "welcomeTitle": "Welkom bij ❤️U Festival",
-    "welcomeText": "16 uur muziek, kunst en eten in Utrecht op 15–16 augustus 2026."
+    "welcomeText": "16 uur muziek, kunst en eten in Utrecht op 15–16 augustus 2026.",
+    "installLabel": "Scan om de app te installeren",
+    "installTitle": "Download app",
+    "installText": "Open de festivalwebapp direct op je mobiele apparaat.",
+    "installButton": "Download / Open App"
   },
   "artist": {
     "loading": "Artiest laden…",

@@ -8,6 +8,7 @@ import ActModal from '../components/ActModal.jsx';
 const scheduleStart = 10 * 60;
 const scheduleEnd = 24 * 60;
 const totalMinutes = scheduleEnd - scheduleStart;
+const timelineHeight = totalMinutes * 4;
 
 function getActDetails(stage, act, acts, lang) {
   const details = acts[act.id] || acts[act.slug] || {};
@@ -116,14 +117,14 @@ export default function Schedule() {
   const [showFavouritesOnly, setShowFavouritesOnly] = useState(false);
   const [nowMinutes, setNowMinutes] = useState(() => {
     const now = new Date();
-    return now.getHours() * 60 + now.getMinutes();
+    return now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
   });
 
   useEffect(() => {
     const timer = window.setInterval(() => {
       const now = new Date();
-      setNowMinutes(now.getHours() * 60 + now.getMinutes());
-    }, 60000);
+      setNowMinutes(now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60);
+    }, 1000);
     return () => window.clearInterval(timer);
   }, []);
 
@@ -192,8 +193,9 @@ export default function Schedule() {
   const hasAnyEvents = useMemo(() => blocks.some((stage) => stage.acts.length > 0), [blocks]);
 
   const currentLineTop = useMemo(() => {
-    if (nowMinutes < scheduleStart || nowMinutes > scheduleEnd) return null;
-    return ((nowMinutes - scheduleStart) / totalMinutes) * 900;
+    if (nowMinutes < scheduleStart) return 0;
+    if (nowMinutes > scheduleEnd) return timelineHeight;
+    return ((nowMinutes - scheduleStart) / totalMinutes) * timelineHeight;
   }, [nowMinutes]);
 
   const toggleFavourite = (actId) => {
@@ -292,7 +294,9 @@ export default function Schedule() {
               onOpenArtist={(act) => openArtist(act)}
               favourites={favourites}
               toggleFavourite={toggleFavourite}
-              nowMinutes={nowMinutes}
+              startMinutes={scheduleStart}
+              totalMinutes={totalMinutes}
+              totalHeight={timelineHeight}
             />
           ))}
           {currentLineTop !== null ? <div className="current-time-line" style={{ top: `${currentLineTop}px` }} /> : null}

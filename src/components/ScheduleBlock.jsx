@@ -1,8 +1,4 @@
-export default function ScheduleBlock({ stage, blocks, onSelect, onOpenArtist, favourites, toggleFavourite }) {
-  const startMinutes = 10 * 60;
-  const totalMinutes = 14 * 60 + 45;
-  const totalHeight = 900;
-
+export default function ScheduleBlock({ stage, blocks, onSelect, onOpenArtist, favourites, toggleFavourite, startMinutes = 10 * 60, totalMinutes = 14 * 60 + 45, totalHeight = 900 }) {
   const getTop = (time) => {
     const [hour, minute] = time.split(':').map(Number);
     const minutes = hour * 60 + minute;

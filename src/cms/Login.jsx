@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './cms.css';
 
+// CMS login page. Submits the password to the backend and redirects on success.
 export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');

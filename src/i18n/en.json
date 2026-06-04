@@ -49,6 +49,13 @@
     "permissionDenied": "Location permission denied.",
     "positionUnavailable": "Location currently unavailable.",
     "geolocationUnsupported": "Geolocation is not supported in this browser.",
+    "loading": "Loading map…",
+    "loadError": "Unable to load map data.",
+    "legendTitle": "Stage legend",
+    "popupNow": "Now",
+    "popupNone": "No act now",
+    "popupNext": "Next",
+    "openArtist": "Open artist",
     "currentAct": "Current act"
   },
   "info": {
@@ -64,7 +71,11 @@
   },
   "home": {
     "welcomeTitle": "Welcome to ❤️U Festival",
-    "welcomeText": "16 hours of music, art and food in Utrecht on 15–16 August 2026."
+    "welcomeText": "16 hours of music, art and food in Utrecht on 15–16 August 2026.",
+    "installLabel": "Scan to install the app",
+    "installTitle": "Download App",
+    "installText": "Open the festival web app instantly on your mobile device.",
+    "installButton": "Download / Open App"
   },
   "artist": {
     "loading": "Loading artist…",

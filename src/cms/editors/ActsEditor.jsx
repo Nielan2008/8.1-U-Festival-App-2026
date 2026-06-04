@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import './../../cms/cms.css';
 
+// CMS editor for managing festival acts.
+// Supports create, read, update, and delete actions via protected API calls.
 export default function ActsEditor() {
   const [acts, setActs] = useState([]);
   const [loading, setLoading] = useState(true);

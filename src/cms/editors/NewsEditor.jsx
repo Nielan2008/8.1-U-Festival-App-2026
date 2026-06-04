@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import './../../cms/cms.css';
 
+// CMS editor for news items shown on the home page.
+// Uses authenticated POST/PUT/DELETE requests to update content.
 export default function NewsEditor() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);

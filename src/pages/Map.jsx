@@ -1,10 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import MapSVG from '../components/MapSVG.jsx';
 import { useTranslation } from 'react-i18next';
+
+// Festival map page with location tracking and stage popup summaries.
 import { localize } from '../utils/dataStore.js';
 
 export default function MapPage() {
   const { i18n, t } = useTranslation();
+  const navigate = useNavigate();
   const [position, setPosition] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
   const [locations, setLocations] = useState([]);
@@ -47,65 +51,55 @@ export default function MapPage() {
     setLoading(true);
     setLoadError(null);
 
-    const fetchMap = fetch('/api/map', { credentials: 'include' })
-      .then((r) => {
-        if (!r.ok) throw new Error(`Map request failed: ${r.status}`);
-        return r.json();
-      })
-      .then((data) => {
+    Promise.all([
+      fetch('/api/map', { credentials: 'include' }),
+      fetch('/api/schedule', { credentials: 'include' })
+    ])
+      .then(async ([mapRes, scheduleRes]) => {
+        if (!mapRes.ok) throw new Error(`Map request failed: ${mapRes.status}`);
+        if (!scheduleRes.ok) throw new Error(`Schedule request failed: ${scheduleRes.status}`);
+        const [mapJson, scheduleJson] = await Promise.all([mapRes.json(), scheduleRes.json()]);
         if (!mounted) return;
-        if (Array.isArray(data)) {
-          setLocations(data);
-        } else if (data && Array.isArray(data.locations)) {
-          setLocations(data.locations);
-        } else {
-          setLocations([]);
-        }
-      });
-
-    const fetchSchedule = fetch('/api/schedule', { credentials: 'include' })
-      .then((r) => {
-        if (!r.ok) throw new Error(`Schedule request failed: ${r.status}`);
-        return r.json();
+        setLocations(Array.isArray(mapJson) ? mapJson : mapJson.locations || []);
+        setScheduleData(Array.isArray(scheduleJson) ? scheduleJson : []);
       })
-      .then((data) => {
-        if (!mounted) return;
-        setScheduleData(Array.isArray(data) ? data : []);
-      });
-
-    Promise.all([fetchMap, fetchSchedule])
       .catch((err) => {
         console.error('Failed to load map page data:', err);
-        if (mounted) setLoadError('Failed to load map data');
+        if (mounted) setLoadError(t('map.loadError'));
       })
       .finally(() => {
         if (mounted) setLoading(false);
       });
 
     return () => { mounted = false; };
-  }, []);
+  }, [t]);
 
   const stageEvents = useMemo(() => {
     const now = new Date();
     const allShows = [];
 
     const addShow = (row) => {
+      const start = row.start_time || row.start || '';
+      const end = row.end_time || row.end || '';
+      const startDate = start ? new Date(`1970-01-01T${start}:00`) : null;
+      const endDate = end ? new Date(`1970-01-01T${end}:00`) : null;
       allShows.push({
-        title: row.title || '',
-        stage: row.stage,
-        start: row.start_time || row.start,
-        end: row.end_time || row.end,
-        startDate: row.start_time ? new Date(`1970-01-01T${row.start_time}:00`) : row.start ? new Date(`1970-01-01T${row.start}:00`) : null,
-        endDate: row.end_time ? new Date(`1970-01-01T${row.end_time}:00`) : row.end ? new Date(`1970-01-01T${row.end}:00`) : null
+        id: row.act_id || row.slug || row.id || row.title || '',
+        title: row.title || row.name || '',
+        stage: row.stage || '',
+        start,
+        end,
+        startDate,
+        endDate
       });
     };
 
     if (Array.isArray(scheduleData)) {
-      scheduleData.forEach(addShow);
-    } else if (scheduleData && typeof scheduleData === 'object') {
-      Object.values(scheduleData).flat(Infinity).forEach((item) => {
-        if (item && typeof item === 'object' && (item.stage || item.start || item.start_time)) {
+      scheduleData.forEach((item) => {
+        if (item && item.stage && item.start_time) {
           addShow(item);
+        } else if (item && Array.isArray(item.acts)) {
+          item.acts.forEach((act) => addShow({ ...act, stage: item.stage, day: item.day }));
         }
       });
     }
@@ -114,8 +108,8 @@ export default function MapPage() {
       const label = localize(location.label || location.name, i18n.language);
       const stageKey = location.name || location.id || (typeof location.label === 'string' ? location.label : location.label?.en) || label;
       const events = allShows.filter((act) => act.stage === stageKey || act.stage === label).sort((a, b) => (a.startDate || 0) - (b.startDate || 0));
-      const current = events.find((act) => act.startDate && act.endDate && act.startDate <= now && act.endDate > now);
-      const next = events.find((act) => act.startDate && act.startDate > now);
+      const current = events.find((act) => act.startDate && act.endDate && act.startDate <= now && act.endDate > now) || null;
+      const next = events.find((act) => act.startDate && act.startDate > now) || null;
       return { ...location, current, next, label };
     });
   }, [locations, scheduleData, i18n.language]);
@@ -139,7 +133,7 @@ export default function MapPage() {
 
   const geolocationSupported = typeof navigator !== 'undefined' && Boolean(navigator.geolocation);
 
-  if (loading) return <section className="map-page"><div className="map-loading">Loading map…</div></section>;
+  if (loading) return <section className="map-page"><div className="map-loading">{t('map.loading')}</div></section>;
   if (loadError) return <section className="map-page"><div className="map-error">{loadError}</div></section>;
 
   return (
@@ -151,11 +145,18 @@ export default function MapPage() {
       </div>
       <h1 className="section-title">{t('map.title')}</h1>
       <div className="map-wrapper">
-        <MapSVG ref={mapSvgRef} svgUrl="/kaart_festival_no_markers.svg" locations={locations} stageEvents={stageEvents} position={position} />
+        <MapSVG
+          ref={mapSvgRef}
+          svgUrl="/kaart_festival_no_markers.svg"
+          locations={locations}
+          stageEvents={stageEvents}
+          position={position}
+          onOpenArtist={(actId) => { if (actId) navigate(`/artist/${actId}`); }}
+        />
       </div>
       <div className="map-info">
         {errorMessage ? <div className="map-error">{errorMessage}</div> : <p>{position ? t('map.locationAllowed') : t('map.locationDenied')}</p>}
-        <span className="location-badge">{t('map.title')}</span>
+        <span className="location-badge">{t('map.legendTitle')}</span>
       </div>
     </section>
   );

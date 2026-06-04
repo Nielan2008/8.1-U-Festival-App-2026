@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import './cms.css';
 
+// CMS dashboard landing page.
+// Displays counts of content types and navigation links to editors.
 export default function Dashboard() {
   const [counts, setCounts] = useState({});
   const [error, setError] = useState('');

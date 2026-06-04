@@ -3,6 +3,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { localize } from '../utils/dataStore.js';
 
+// Artist detail page. Loads a single act and its schedule details.
+// Embeds the act video using a privacy-friendly YouTube no-cookie URL.
+
 function extractVideoId(url) {
   try {
     const cleaned = url.replace('https://www.youtube.com/watch?v=', '').replace('https://youtu.be/', '');

@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './../../cms/cms.css';
 
+// CMS map editor.
+// Handles marker CRUD, coordinate migration, and drag/drop positioning on the SVG canvas.
 export default function MapEditor(){
   const [items,setItems]=useState([]);
   const [loading,setLoading]=useState(true);

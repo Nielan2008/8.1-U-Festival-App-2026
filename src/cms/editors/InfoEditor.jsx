@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import './../../cms/cms.css';
 
+// CMS editor for general info entries.
+// Supports key/value content records for multiple languages.
 export default function InfoEditor(){
   const [items,setItems]=useState([]);
   const [loading,setLoading]=useState(true);

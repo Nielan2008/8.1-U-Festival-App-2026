@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 
+// Route guard that redirects unauthenticated users to the CMS login page.
 export default function ProtectedRoute({ children }) {
   const [checking, setChecking] = useState(true);
   const [authed, setAuthed] = useState(false);

@@ -1,5 +1,7 @@
 import React, { createContext, useEffect, useState } from 'react';
 
+// Context provider for CMS authentication state.
+// Fetches auth status from the backend on mount.
 export const CmsAuthContext = createContext({ authed: false, refresh: () => {} });
 
 export function CmsAuthProvider({ children }) {

@@ -84,6 +84,14 @@ https://your-app.onrender.com/api/seed-db?key=YOUR_SEED_KEY
 - Node 24 ESM resolver issues (downgraded to Node 20)
 - Missing `.frankfurt-postgres.render.com` in `DATABASE_URL`
 
+## Developer prompts used
+
+- Add a QR code feature to the home page that allows users to download or install the web app.
+- Check if everything in the CMS is working correctly.
+- Add comments throughout the codebase and put all prompts into README.md.
+- Audit map, schedule, artist, bilingual, PWA, and CMS functionality.
+- Ensure environment-aware install URLs and fallback download behavior.
+
 ## Important notes
 
 - Free PostgreSQL on Render suspends after 90 days inactivity

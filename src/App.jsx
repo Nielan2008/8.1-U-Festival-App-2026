@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { BrowserRouter, NavLink, Route, Routes, useLocation, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Home from './pages/Home.jsx';
+
+// Main application entry point and routing shell.
+// Handles theme persistence, translation, navigation, and CMS route protection.
 import Info from './pages/Info.jsx';
 import Schedule from './pages/Schedule.jsx';
 import MapPage from './pages/Map.jsx';

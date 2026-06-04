@@ -133,6 +133,98 @@ a {
   color: var(--color-secondary);
 }
 
+.download-app-panel {
+  display: grid;
+  gap: 1.25rem;
+  margin: 1.5rem 0 2rem;
+  padding: 1.25rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+}
+
+@media (min-width: 880px) {
+  .download-app-panel {
+    grid-template-columns: 1fr 320px;
+    align-items: center;
+  }
+}
+
+.download-app-copy {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.download-app-label {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.download-app-text {
+  margin: 0;
+  color: var(--color-muted);
+  max-width: 42rem;
+}
+
+.download-qr-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #ffffff;
+  border-radius: 24px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.02);
+}
+
+body.theme-dark .download-qr-card {
+  background: #111111;
+  border-color: rgba(255,255,255,0.1);
+}
+
+.download-qr-headline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 700;
+}
+
+.download-qr-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 14px;
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.download-qr-wrapper {
+  padding: 1rem;
+  background: #fff;
+  border-radius: 22px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+body.theme-dark .download-qr-wrapper {
+  background: #171717;
+}
+
+.download-app-button {
+  width: min(100%, 260px);
+}
+
+.download-qr-wrapper svg {
+  width: 100%;
+  height: auto;
+  max-width: 240px;
+}
+
 .accordion {
   display: grid;
   gap: 0.95rem;
@@ -682,6 +774,17 @@ html[data-theme='dark'] .flag-button,
   display: grid;
   grid-template-columns: 5rem repeat(4, minmax(220px, 1fr));
   position: relative;
+}
+
+.current-time-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(240, 50, 40, 0.95);
+  box-shadow: 0 0 12px rgba(240, 50, 40, 0.55);
+  z-index: 5;
+  pointer-events: none;
 }
 
 .schedule-column {

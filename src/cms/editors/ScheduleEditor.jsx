@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './../../cms/cms.css';
 
+// CMS schedule editor. Allows selection of acts, stages, and time slots.
 export default function ScheduleEditor() {
   const [items, setItems] = useState([]);
   const [acts, setActs] = useState([]);

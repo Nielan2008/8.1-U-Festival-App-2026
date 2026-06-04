@@ -4,6 +4,9 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import pool from './db.js';
+
+// Backend API server for CMS and public festival data.
+// Contains auth, seed, and CRUD routes for acts, schedule, news, map points, and info.
 import seed from './migrations/seed.js';
 import session from 'express-session';
 import connectPgSimple from 'connect-pg-simple';

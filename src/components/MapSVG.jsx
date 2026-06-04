@@ -1,5 +1,9 @@
-import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import './map-svg.css';
+
+// Low-level map SVG renderer.
+// Supports panning, zooming, marker positioning, popups, and GPS point rendering.
 
 function parseViewBox(svgText) {
   const m = svgText.match(/viewBox="([0-9\.\-\s]+)"/);
@@ -10,11 +14,20 @@ function parseViewBox(svgText) {
   return null;
 }
 
-export default React.forwardRef(function MapSVG({ svgUrl, locations = [], stageEvents = [], position }, ref) {
+function addPreserveAspectRatio(svgText) {
+  return svgText.replace(/<svg([^>]*?)>/, (match, attrs) => {
+    if (/preserveAspectRatio=/i.test(match)) return match;
+    return `<svg${attrs} preserveAspectRatio="xMinYMin meet">`;
+  });
+}
+
+export default React.forwardRef(function MapSVG({ svgUrl, locations = [], stageEvents = [], position, onOpenArtist = () => {} }, ref) {
+  const { t } = useTranslation();
   const containerRef = useRef(null);
   const svgRef = useRef(null);
   const [svgText, setSvgText] = useState(null);
   const [viewBox, setViewBox] = useState({ width: 1000, height: 600 });
+  const [baseScale, setBaseScale] = useState(1);
   const [scale, setScale] = useState(1);
   const [tx, setTx] = useState(0);
   const [ty, setTy] = useState(0);
@@ -25,11 +38,24 @@ export default React.forwardRef(function MapSVG({ svgUrl, locations = [], stageE
 
   useEffect(() => {
     fetch(svgUrl).then((r) => r.text()).then((text) => {
-      setSvgText(text);
-      const vb = parseViewBox(text);
+      const svgWithAspect = addPreserveAspectRatio(text);
+      setSvgText(svgWithAspect);
+      const vb = parseViewBox(svgWithAspect);
       if (vb) setViewBox({ width: vb.width, height: vb.height });
     }).catch(() => {});
   }, [svgUrl]);
+
+  useEffect(() => {
+    const updateBaseScale = () => {
+      if (!containerRef.current || !viewBox.width || !viewBox.height) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const newBase = Math.min(rect.width / viewBox.width, rect.height / viewBox.height);
+      setBaseScale(newBase || 1);
+    };
+    updateBaseScale();
+    window.addEventListener('resize', updateBaseScale);
+    return () => window.removeEventListener('resize', updateBaseScale);
+  }, [viewBox]);
 
   useEffect(() => {
     const onWheel = (e) => {
@@ -99,16 +125,18 @@ export default React.forwardRef(function MapSVG({ svgUrl, locations = [], stageE
     return { x: 0, y: 0 };
   }, [toSvgPoint]);
 
-  const screenPosition = useCallback((pt) => ({ left: pt.x * scale + tx, top: pt.y * scale + ty }), [scale, tx, ty]);
+  const actualScale = useMemo(() => baseScale * scale, [baseScale, scale]);
+  const screenPosition = useCallback((pt) => ({ left: pt.x * actualScale, top: pt.y * actualScale }), [actualScale]);
 
   useImperativeHandle(ref, () => ({
     centerOnCoords(lat, lng) {
       const pt = toSvgPoint(Number(lat), Number(lng));
+      if (!containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
       const cx = rect.width / 2;
       const cy = rect.height / 2;
-      setTx(cx - pt.x * scale);
-      setTy(cy - pt.y * scale);
+      setTx(cx - pt.x * actualScale);
+      setTy(cy - pt.y * actualScale);
     }
   }));
 
@@ -160,7 +188,11 @@ export default React.forwardRef(function MapSVG({ svgUrl, locations = [], stageE
     e.stopPropagation();
     const pt = project(loc);
     const screen = screenPosition(pt);
-    const ev = stageEvents.find((s) => (s.id || s.name) === (loc.id || loc.name) || (s.label && (s.label.en === loc.label?.en || s.label.nl === loc.label?.nl)));
+    const ev = stageEvents.find((s) => {
+      if (loc.id && s.id && loc.id === s.id) return true;
+      if (loc.name && (s.stage === loc.name || s.stage === loc.label || s.stage === loc.id)) return true;
+      return false;
+    });
     setPopup({ loc, x: screen.left, y: screen.top, event: ev });
   };
 
@@ -177,7 +209,7 @@ export default React.forwardRef(function MapSVG({ svgUrl, locations = [], stageE
       <div className="map-markers" style={{ transform: `translate(${tx}px, ${ty}px)` }}>
         {locations.map((loc) => {
           const pt = project(loc);
-          const screen = { left: pt.x * scale, top: pt.y * scale };
+          const screen = { left: pt.x * actualScale, top: pt.y * actualScale };
           const ev = stageEvents.find((s) => (s.id || s.name) === (loc.id || loc.name) || (s.label && (s.label.en === loc.label?.en || s.label.nl === loc.label?.nl)));
           return (
             <button
@@ -193,16 +225,29 @@ export default React.forwardRef(function MapSVG({ svgUrl, locations = [], stageE
         })}
         {position ? (() => {
           const pt = toSvgPoint(position.lat, position.lng);
-          const screen = { left: pt.x * scale, top: pt.y * scale };
+          const screen = { left: pt.x * actualScale, top: pt.y * actualScale };
           return <div className="map-gps-dot" style={{ left: `${screen.left}px`, top: `${screen.top}px` }} />;
         })() : null}
       </div>
 
       {popup ? (
-        <div className="map-popup" style={{ left: popup.x + 12, top: popup.y - 6 }} onClick={(e)=>e.stopPropagation()}>
-          <strong>{(typeof popup.loc.label === 'object' ? (popup.loc.label.nl || popup.loc.label.en) : popup.loc.label) || popup.loc.name}</strong>
-          <div className="popup-row">{popup.event?.current ? <span className="now">Nu: {popup.event.current.title}</span> : <span>Geen act nu</span>}</div>
-          {popup.event?.next ? <div className="popup-row">Volgende: {popup.event.next.title} ({popup.event.next.start})</div> : null}
+        <div className="map-popup" style={{ left: popup.x + 12, top: popup.y - 6 }} onClick={(e) => e.stopPropagation()}>
+          <strong>{(typeof popup.loc.label === 'object' ? (popup.loc.label.en || popup.loc.label.nl) : popup.loc.label) || popup.loc.name}</strong>
+          <div className="popup-row">
+            {popup.event?.current ? (
+              <span className="now">{t('map.popupNow')}: {popup.event.current.title}</span>
+            ) : (
+              <span>{t('map.popupNone')}</span>
+            )}
+          </div>
+          {popup.event?.next ? (
+            <div className="popup-row">{t('map.popupNext')}: {popup.event.next.title} ({popup.event.next.start})</div>
+          ) : null}
+          {popup.event?.current?.id ? (
+            <button type="button" className="map-popup-action" onClick={() => onOpenArtist(popup.event.current.id)}>
+              {t('map.openArtist')}
+            </button>
+          ) : null}
         </div>
       ) : null}
     </div>
