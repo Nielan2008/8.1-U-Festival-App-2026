@@ -2,10 +2,6 @@ import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } 
 import { gpsToSvg, clampToSvgBounds, createGpsTransform } from '../utils/gpsToSvg.js';
 import './interactive-map.css';
 
-/**
- * Interactive Efteling-style festival map
- * Features: pinch-zoom, pan with clamping, scale-invariant markers, user location dot
- */
 const InteractiveMapCanvas = React.forwardRef(function InteractiveMapCanvas(
   {
     mapSvgUrl = '/kaart_festival_no_markers.svg',
@@ -20,22 +16,19 @@ const InteractiveMapCanvas = React.forwardRef(function InteractiveMapCanvas(
   const containerRef = useRef(null);
   const transformRef = useRef(null);
 
-  // SVG and viewport state
   const [svgError, setSvgError] = useState(false);
   const [viewBox, setViewBox] = useState({ x: 0, y: 0, width: 2000, height: 1200 });
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
   const [baseScale, setBaseScale] = useState(1);
 
-  // Pan/zoom state
   const [scale, setScale] = useState(1);
   const [tx, setTx] = useState(0);
   const [ty, setTy] = useState(0);
 
-  // GPS transform and user position
   const gpsTransformRef = useRef(null);
   const [userSvgPos, setUserSvgPos] = useState(null);
 
-  // Gesture tracking
+  const [failedIconIds, setFailedIconIds] = useState({});
   const activePointers = useRef(new Map());
   const lastTapRef = useRef(0);
   const lastTapPoint = useRef({ x: 0, y: 0 });
@@ -43,77 +36,22 @@ const InteractiveMapCanvas = React.forwardRef(function InteractiveMapCanvas(
   const lastPanRef = useRef({ tx: 0, ty: 0 });
   const pointerStartRef = useRef({ x: 0, y: 0 });
 
-  // Load SVG metadata (viewBox)
-  useEffect(() => {
-    if (!mapSvgUrl) return;
+  const MIN_SCALE = 1;
+  const MAX_SCALE = 5;
 
-    setSvgError(false);
-    fetch(mapSvgUrl)
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to fetch SVG');
-        return res.text();
-      })
-      .then((svgText) => {
-        // Parse viewBox
-        const match = svgText.match(/viewBox="([^"]+)"/);
-        if (match) {
-          const [x, y, width, height] = match[1].split(/\s+/).map(Number);
-          setViewBox({ x, y, width, height });
-        }
-      })
-      .catch((err) => {
-        console.error('SVG metadata load error:', err);
-        // Set default viewBox on error
-        setViewBox({ x: 0, y: 0, width: 2330.58, height: 1353.19 });
-      });
-  }, [mapSvgUrl]);
+  const getMarkerPosition = (marker) => ({
+    x: marker.x ?? marker.svg_x ?? marker.svgX ?? 0,
+    y: marker.y ?? marker.svg_y ?? marker.svgY ?? 0
+  });
 
-  // Update GPS transform when anchors change
-  useEffect(() => {
-    gpsTransformRef.current = createGpsTransform(anchors);
-  }, [anchors]);
+  const getEventPoint = (event) => ({ x: event.clientX, y: event.clientY });
+  const getLocalPoint = (point) => {
+    const rect = containerRef.current?.getBoundingClientRect();
+    return rect ? { x: point.x - rect.left, y: point.y - rect.top } : { x: 0, y: 0 };
+  };
 
-  // Calculate user position in SVG coordinates
-  useEffect(() => {
-    if (!position || !gpsTransformRef.current) {
-      setUserSvgPos(null);
-      return;
-    }
+  const clampScale = (nextScale) => Math.min(MAX_SCALE, Math.max(MIN_SCALE, nextScale));
 
-    const svgPos = gpsToSvg(position.lat, position.lng, gpsTransformRef.current);
-    if (svgPos) {
-      const clamped = clampToSvgBounds(svgPos, viewBox, 50);
-      setUserSvgPos(clamped);
-    }
-  }, [position, viewBox]);
-
-  // Calculate base scale to fill container without leaving empty edges
-  useEffect(() => {
-    if (!containerRef.current || !viewBox.width || !viewBox.height) return;
-
-    const handleResize = () => {
-      const rect = containerRef.current.getBoundingClientRect();
-      setContainerSize({ width: rect.width, height: rect.height });
-
-      const scaleX = rect.width / viewBox.width;
-      const scaleY = rect.height / viewBox.height;
-      const newBaseScale = Math.max(scaleX, scaleY);
-      setBaseScale(newBaseScale || 1);
-
-      // Reset pan/zoom on resize
-      setScale(1);
-      setTx(0);
-      setTy(0);
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [viewBox]);
-
-  /**
-   * Clamp pan/translate values to keep map within viewport
-   */
   const clampPan = useCallback(
     (translateX, translateY, zoomScale) => {
       const totalScale = baseScale * zoomScale;
@@ -149,59 +87,118 @@ const InteractiveMapCanvas = React.forwardRef(function InteractiveMapCanvas(
     [baseScale, viewBox, containerSize]
   );
 
-  /**
-   * Apply transform to viewport SVG
-   */
+  useEffect(() => {
+    if (!mapSvgUrl) return;
+
+    setSvgError(false);
+    fetch(mapSvgUrl)
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to fetch SVG');
+        return res.text();
+      })
+      .then((svgText) => {
+        const match = svgText.match(/viewBox="([^\"]+)"/);
+        if (match) {
+          const [x, y, width, height] = match[1].split(/\s+/).map(Number);
+          setViewBox({ x, y, width, height });
+        }
+      })
+      .catch((err) => {
+        console.error('SVG metadata load error:', err);
+        setViewBox({ x: 0, y: 0, width: 2330.58, height: 1353.19 });
+      });
+  }, [mapSvgUrl]);
+
+  useEffect(() => {
+    gpsTransformRef.current = createGpsTransform(anchors);
+  }, [anchors]);
+
+  useEffect(() => {
+    if (!position || !gpsTransformRef.current) {
+      setUserSvgPos(null);
+      return;
+    }
+
+    const svgPos = gpsToSvg(position.lat, position.lng, gpsTransformRef.current);
+    if (svgPos) {
+      setUserSvgPos(clampToSvgBounds(svgPos, viewBox, 50));
+    }
+  }, [position, viewBox]);
+
+  useEffect(() => {
+    if (!containerRef.current || !viewBox.width || !viewBox.height) return;
+
+    const handleResize = () => {
+      const rect = containerRef.current.getBoundingClientRect();
+      setContainerSize({ width: rect.width, height: rect.height });
+
+      const scaleX = rect.width / viewBox.width;
+      const scaleY = rect.height / viewBox.height;
+      const newBaseScale = Math.max(scaleX, scaleY);
+      setBaseScale(newBaseScale || 1);
+      setScale(1);
+      setTx(0);
+      setTy(0);
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [viewBox]);
+
   const applyTransform = useCallback(() => {
     if (!transformRef.current) return;
     const totalScale = baseScale * scale;
-    const transform = `translate(${tx}px, ${ty}px) scale(${totalScale})`;
-    transformRef.current.style.transform = transform;
+    transformRef.current.style.transform = `translate(${tx}px, ${ty}px) scale(${totalScale})`;
   }, [baseScale, scale, tx, ty]);
 
   useEffect(() => {
     applyTransform();
   }, [applyTransform]);
 
-  const MIN_SCALE = 1;
-  const MAX_SCALE = 5;
-
-  const getEventPoint = (event) => ({ x: event.clientX, y: event.clientY });
+  // Batch DOM transform updates on rAF for smoother animations
+  const rafRef = useRef(null);
+  useEffect(() => {
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(() => applyTransform());
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    };
+  }, [applyTransform, scale, tx, ty, baseScale]);
 
   const getPointerCenter = () => {
     const pointers = Array.from(activePointers.current.values());
-    const x = (pointers[0].x + pointers[1].x) / 2;
-    const y = (pointers[0].y + pointers[1].y) / 2;
-    return { x, y };
+    return pointers.length === 2
+      ? { x: (pointers[0].x + pointers[1].x) / 2, y: (pointers[0].y + pointers[1].y) / 2 }
+      : { x: 0, y: 0 };
   };
 
   const getPointerDistance = () => {
     const pointers = Array.from(activePointers.current.values());
-    return Math.hypot(pointers[0].x - pointers[1].x, pointers[0].y - pointers[1].y);
+    return pointers.length === 2 ? Math.hypot(pointers[0].x - pointers[1].x, pointers[0].y - pointers[1].y) : 0;
   };
 
-  const getLocalPoint = (point) => {
-    const rect = containerRef.current.getBoundingClientRect();
-    return { x: point.x - rect.left, y: point.y - rect.top };
-  };
-
-  const setTransform = (newScale, newTx, newTy) => {
-    const clamped = clampPan(newTx, newTy, newScale);
-    setScale(newScale);
+  const setTransform = (nextScale, nextTx, nextTy) => {
+    const clampedScale = clampScale(nextScale);
+    const clamped = clampPan(nextTx, nextTy, clampedScale);
+    setScale(clampedScale);
     setTx(clamped.tx);
     setTy(clamped.ty);
   };
 
-  const applyZoomAtPoint = (newScale, centerX, centerY) => {
+  const applyZoomAtPoint = (nextScale, centerX, centerY) => {
+    if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const local = { x: centerX - rect.left, y: centerY - rect.top };
     const oldTotalScale = baseScale * scale;
+    const newScale = clampScale(nextScale);
     const newTotalScale = baseScale * newScale;
     const mapPointX = (local.x - tx) / oldTotalScale;
     const mapPointY = (local.y - ty) / oldTotalScale;
-    const newTx = local.x - mapPointX * newTotalScale;
-    const newTy = local.y - mapPointY * newTotalScale;
-    setTransform(newScale, newTx, newTy);
+    const nextTx = local.x - mapPointX * newTotalScale;
+    const nextTy = local.y - mapPointY * newTotalScale;
+    setTransform(newScale, nextTx, nextTy);
   };
 
   const handlePointerDown = (e) => {
@@ -211,7 +208,15 @@ const InteractiveMapCanvas = React.forwardRef(function InteractiveMapCanvas(
 
     e.preventDefault();
     activePointers.current.set(e.pointerId, getEventPoint(e));
-    e.currentTarget.setPointerCapture(e.pointerId);
+    try {
+      if (containerRef.current && typeof containerRef.current.setPointerCapture === 'function') {
+        containerRef.current.setPointerCapture(e.pointerId);
+      } else if (e.currentTarget && typeof e.currentTarget.setPointerCapture === 'function') {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      }
+    } catch (err) {
+      // Non-fatal: some browsers may disallow pointer capture in certain contexts
+    }
 
     if (activePointers.current.size === 1) {
       pointerStartRef.current = getEventPoint(e);
@@ -219,21 +224,19 @@ const InteractiveMapCanvas = React.forwardRef(function InteractiveMapCanvas(
     }
 
     if (activePointers.current.size === 2) {
-      const center = getPointerCenter();
       pinchRef.current = {
         startScale: scale,
         startTx: tx,
         startTy: ty,
         startDistance: getPointerDistance(),
-        startCenter: getLocalPoint(center)
+        startCenter: getLocalPoint(getPointerCenter())
       };
     }
 
     const now = Date.now();
     if (now - lastTapRef.current < 300 && Math.hypot(e.clientX - lastTapPoint.current.x, e.clientY - lastTapPoint.current.y) < 30) {
       lastTapRef.current = 0;
-      const targetScale = Math.min(Math.max(scale * 2, MIN_SCALE), MAX_SCALE);
-      applyZoomAtPoint(targetScale, e.clientX, e.clientY);
+      applyZoomAtPoint(Math.min(scale + 1, MAX_SCALE), e.clientX, e.clientY);
     } else {
       lastTapRef.current = now;
       lastTapPoint.current = { x: e.clientX, y: e.clientY };
@@ -249,7 +252,7 @@ const InteractiveMapCanvas = React.forwardRef(function InteractiveMapCanvas(
 
     if (activePointers.current.size === 2 && pinchRef.current) {
       const currentDistance = getPointerDistance();
-      const newScale = Math.min(Math.max(pinchRef.current.startScale * (currentDistance / pinchRef.current.startDistance), MIN_SCALE), MAX_SCALE);
+      const newScale = clampScale(pinchRef.current.startScale * (currentDistance / pinchRef.current.startDistance));
       const currentCenter = getLocalPoint(getPointerCenter());
       const oldTotalScale = baseScale * pinchRef.current.startScale;
       const newTotalScale = baseScale * newScale;
@@ -264,9 +267,7 @@ const InteractiveMapCanvas = React.forwardRef(function InteractiveMapCanvas(
     if (activePointers.current.size === 1) {
       const deltaX = e.clientX - pointerStartRef.current.x;
       const deltaY = e.clientY - pointerStartRef.current.y;
-      const newTx = lastPanRef.current.tx + deltaX;
-      const newTy = lastPanRef.current.ty + deltaY;
-      setTransform(scale, newTx, newTy);
+      setTransform(scale, lastPanRef.current.tx + deltaX, lastPanRef.current.ty + deltaY);
     }
   };
 
@@ -292,34 +293,25 @@ const InteractiveMapCanvas = React.forwardRef(function InteractiveMapCanvas(
     endPointer(e);
   };
 
-  /**
-   * Handle wheel zoom (desktop)
-   */
+  const handleZoomButton = (delta) => {
+    const nextScale = clampScale(scale + delta);
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    applyZoomAtPoint(nextScale, rect.left + rect.width / 2, rect.top + rect.height / 2);
+  };
+
   const handleWheel = (e) => {
     if (!e.ctrlKey && !e.metaKey) return;
+    if (!containerRef.current) return;
+
     e.preventDefault();
-
-    const zoomDelta = e.deltaY > 0 ? 0.9 : 1.1;
-    const newScale = Math.max(1, Math.min(3, scale * zoomDelta));
-
-    // Zoom toward mouse cursor
     const rect = containerRef.current.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
-
-    const scaleDiff = (newScale - scale) * baseScale;
-    const newTx = tx - mouseX * (scaleDiff / containerSize.width);
-    const newTy = ty - mouseY * (scaleDiff / containerSize.height);
-
-    const clamped = clampPan(newTx, newTy, newScale);
-    setScale(newScale);
-    setTx(clamped.tx);
-    setTy(clamped.ty);
+    const newScale = clampScale(scale * (e.deltaY > 0 ? 0.95 : 1.05));
+    applyZoomAtPoint(newScale, e.clientX, e.clientY);
   };
 
-  /**
-   * Convert SVG coordinates to screen coordinates
-   */
   const getScreenCoordinates = useCallback(
     (svgX, svgY) => {
       const totalScale = baseScale * scale;
@@ -331,39 +323,29 @@ const InteractiveMapCanvas = React.forwardRef(function InteractiveMapCanvas(
     [baseScale, scale, tx, ty]
   );
 
-  /**
-   * Center map on user location
-   */
   const centerOnUserLocation = useCallback(() => {
     if (!userSvgPos) return;
-
     const screenCoords = getScreenCoordinates(userSvgPos.x, userSvgPos.y);
-    const newTx = containerSize.width / 2 - screenCoords.x;
-    const newTy = containerSize.height / 2 - screenCoords.y;
-
-    const clamped = clampPan(newTx, newTy, scale);
+    const nextTx = containerSize.width / 2 - screenCoords.x;
+    const nextTy = containerSize.height / 2 - screenCoords.y;
+    const clamped = clampPan(nextTx, nextTy, scale);
     setTx(clamped.tx);
     setTy(clamped.ty);
   }, [userSvgPos, getScreenCoordinates, scale, clampPan, containerSize]);
 
-  /**
-   * Expose imperative methods via ref
-   */
   useImperativeHandle(ref, () => ({
     centerOnUserLocation,
     centerOnCoords: (lat, lng) => {
       if (!gpsTransformRef.current) return;
       const svgPos = gpsToSvg(lat, lng, gpsTransformRef.current);
       if (!svgPos) return;
-
-      const clamped = clampToSvgBounds(svgPos, viewBox, 50);
-      const screenCoords = getScreenCoordinates(clamped.x, clamped.y);
-      const newTx = containerSize.width / 2 - screenCoords.x;
-      const newTy = containerSize.height / 2 - screenCoords.y;
-
-      const clampedPan = clampPan(newTx, newTy, scale);
-      setTx(clampedPan.tx);
-      setTy(clampedPan.ty);
+      const clampedSvgPos = clampToSvgBounds(svgPos, viewBox, 50);
+      const screenCoords = getScreenCoordinates(clampedSvgPos.x, clampedSvgPos.y);
+      const nextTx = containerSize.width / 2 - screenCoords.x;
+      const nextTy = containerSize.height / 2 - screenCoords.y;
+      const clamped = clampPan(nextTx, nextTy, scale);
+      setTx(clamped.tx);
+      setTy(clamped.ty);
     }
   }), [centerOnUserLocation, getScreenCoordinates, clampPan, scale, viewBox, containerSize]);
 
@@ -375,8 +357,27 @@ const InteractiveMapCanvas = React.forwardRef(function InteractiveMapCanvas(
     );
   }
 
-  // Map can display without waiting for SVG image to load
-  // (markers will be visible on empty background)
+  const renderMarkerIcon = (marker, markerSize) => {
+    const iconKey = marker.id || marker.label || `${marker.x}-${marker.y}`;
+    if (!marker.icon || failedIconIds[iconKey]) {
+      const fallbackLabel = marker.type === 'stage' ? (marker.id || marker.name || '★') : (marker.label?.en || marker.label || 'POI');
+      return (
+        <div className="marker-fallback" style={{ width: markerSize, height: markerSize }}>
+          <span>{typeof fallbackLabel === 'string' ? fallbackLabel.charAt(0) : '•'}</span>
+        </div>
+      );
+    }
+
+    return (
+      <img
+        src={marker.icon}
+        alt={typeof marker.label === 'string' ? marker.label : marker.label?.en || marker.name || 'Marker'}
+        className="marker-icon"
+        draggable="false"
+        onError={() => setFailedIconIds((prev) => ({ ...prev, [iconKey]: true }))}
+      />
+    );
+  };
 
   return (
     <div
@@ -388,68 +389,69 @@ const InteractiveMapCanvas = React.forwardRef(function InteractiveMapCanvas(
       onPointerCancel={handlePointerCancel}
       onWheel={handleWheel}
     >
-        <div
-          className="map-transform-wrapper"
-          ref={transformRef}
-          style={{
-            width: `${viewBox.width}px`,
-            height: `${viewBox.height}px`,
-            transformOrigin: '0 0',
-            willChange: 'transform'
-          }}
-        >
-          <img
-            src={mapSvgUrl}
-            alt="Festival map"
-            className="map-background-image"
-            draggable="false"
-            onError={() => setSvgError(true)}
-          />
+      <div
+        className="map-transform-wrapper"
+        ref={transformRef}
+        style={{
+          width: `${viewBox.width}px`,
+          height: `${viewBox.height}px`,
+          transformOrigin: '0 0',
+          willChange: 'transform'
+        }}
+      >
+        <img
+          src={mapSvgUrl}
+          alt="Festival map"
+          className="map-background-image"
+          draggable="false"
+          onError={() => setSvgError(true)}
+        />
+      </div>
+
+      <div className="map-zoom-controls">
+        <button type="button" className="zoom-control zoom-in" onClick={() => handleZoomButton(0.5)}>
+          +
+        </button>
+        <button type="button" className="zoom-control zoom-out" onClick={() => handleZoomButton(-0.5)}>
+          −
+        </button>
+      </div>
+
+      {!userSvgPos && (
+        <div className="map-location-unavailable">
+          <span>📍 Location unavailable</span>
         </div>
-        {!userSvgPos && (
-          <div className="map-location-unavailable">
-            <span>📍 Location unavailable</span>
-          </div>
-        )}
+      )}
 
-        <div className="map-markers-layer">
-          {markers.map((marker) => {
-            const screenCoords = getScreenCoordinates(marker.x, marker.y);
-            const markerScale = 1 / scale;
-            const markerSize = 36; // Fixed screen size in pixels
+      <div className="map-markers-layer">
+        {markers.map((marker) => {
+          const { x, y } = getMarkerPosition(marker);
+          const screenCoords = getScreenCoordinates(x, y);
+          const markerScale = 1 / scale;
+          const markerSize = 36;
 
-            return (
-              <button
-                key={marker.id}
-                type="button"
-                className="map-marker"
-                style={{
-                  left: `${screenCoords.x}px`,
-                  top: `${screenCoords.y}px`,
-                  transform: `translate(-50%, -50%) scale(${markerScale})`,
-                  width: markerSize,
-                  height: markerSize
-                }}
-                onClick={() => onMarkerTap(marker)}
-                title={typeof marker.label === 'string' ? marker.label : marker.label?.en || marker.name}
-                aria-label={typeof marker.label === 'string' ? marker.label : marker.label?.en || marker.name}
-              >
-                {marker.icon ? (
-                  <img
-                    src={marker.icon}
-                    alt={typeof marker.label === 'string' ? marker.label : marker.label?.en || marker.name}
-                    className="marker-icon"
-                    draggable="false"
-                  />
-                ) : (
-                  <span className="marker-default">📍</span>
-                )}
-              </button>
-            );
-          })}
-        </div>
+          return (
+            <button
+              key={marker.id ?? `${x}-${y}`}
+              type="button"
+              className="map-marker"
+              style={{
+                left: `${screenCoords.x}px`,
+                top: `${screenCoords.y}px`,
+                transform: `translate(-50%, -50%) scale(${markerScale})`,
+                width: markerSize,
+                height: markerSize
+              }}
+              onClick={() => onMarkerTap(marker)}
+              title={typeof marker.label === 'string' ? marker.label : marker.label?.en || marker.name}
+              aria-label={typeof marker.label === 'string' ? marker.label : marker.label?.en || marker.name}
+            >
+              {renderMarkerIcon(marker, markerSize)}
+            </button>
+          );
+        })}
+      </div>
 
-      {/* User location dot */}
       {userSvgPos && (
         <div
           className="user-location-dot"
@@ -464,7 +466,6 @@ const InteractiveMapCanvas = React.forwardRef(function InteractiveMapCanvas(
         </div>
       )}
 
-      {/* Center on location button */}
       <button
         type="button"
         className="btn-center-location"
