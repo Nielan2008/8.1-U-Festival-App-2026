@@ -13,12 +13,12 @@ export default function MapEditor(){
   const previewRef = useRef(null);
   const dragState = useRef({ id:null, x:null, y:null, icon:null });
   const availableIcons = [
-    '/marker_stage1_ponton.svg',
-    '/marker_stage2_the_lake.svg',
-    '/marker_stage3_the_club.svg',
-    '/marker_stage4_hangar.svg',
-    '/marker_bar.svg',
-    '/marker_food.svg'
+    new URL('../../marker_stage1_ponton.svg', import.meta.url).href,
+    new URL('../../marker_stage2_the_lake.svg', import.meta.url).href,
+    new URL('../../marker_stage3_the_club.svg', import.meta.url).href,
+    new URL('../../marker_stage4_hangar.svg', import.meta.url).href,
+    new URL('../../marker_bar.svg', import.meta.url).href,
+    new URL('../../marker_food.svg', import.meta.url).href
   ];
   const load=()=>{setLoading(true);fetch('/api/map',{credentials:'include'}).then(r=>r.json()).then(setItems).catch(()=>setMsg({error:'Failed'})).finally(()=>setLoading(false))}
   useEffect(()=>{load()},[]);
@@ -306,36 +306,64 @@ export default function MapEditor(){
           {items.map(it=>(<tr key={it.id}><td>{it.name}</td><td className="small">{it.label_en || it.label_nl || it.type}</td><td className="small">{it.lang || 'en'}</td><td className="small">{it.x ?? ''},{it.y ?? ''}</td><td><button className="button ghost" onClick={()=>onEdit(it)}>Edit</button> <button className="button ghost" onClick={()=>del(it.id)}>Delete</button></td></tr>))}
         </tbody></table>
       )}
-      {editing? (<div>
-        <div className="form-row"><input className="input" placeholder="Name" value={form.name} onChange={(e)=>setForm({...form,name:e.target.value})} /></div>
-        <div className="form-row"><label style={{minWidth:80,color:'var(--text)'}}>Language</label><select className="input" value={form.lang} onChange={(e)=>setForm({...form,lang:e.target.value})}><option value="en">English</option><option value="nl">Nederlands</option></select></div>
-        <div className="form-row"><input className="input" placeholder="Type" value={form.type} onChange={(e)=>setForm({...form,type:e.target.value})} /></div>
-        <div className="form-row"><input className="input" placeholder="Label NL" value={form.label_nl} onChange={(e)=>setForm({...form,label_nl:e.target.value})} /><input className="input" placeholder="Label EN" value={form.label_en} onChange={(e)=>setForm({...form,label_en:e.target.value})} /></div>
-        <div className="form-row"><input className="input" placeholder="X (SVG)" value={form.x||''} readOnly /><input className="input" placeholder="Y (SVG)" value={form.y||''} readOnly /></div>
-        <div className="form-row"><label style={{minWidth:80,color:'var(--text)'}}>Icon</label><select className="input" value={form.icon} onChange={(e)=>setForm({...form,icon:e.target.value})}>
-            {availableIcons.map((ic)=> (<option key={ic} value={ic}>{ic.replace('/marker_','').replace('.svg','')}</option>))}
-          </select></div>
-        <div className="form-row"><textarea className="input" placeholder="Description NL" value={form.description.nl} onChange={(e)=>setForm({...form,description:{...form.description,nl:e.target.value}})} /></div>
-        <div className="form-row"><textarea className="input" placeholder="Description EN" value={form.description.en} onChange={(e)=>setForm({...form,description:{...form.description,en:e.target.value}})} /></div>
-        <div className="form-row">
-          <div style={{display:'flex',gap:12,alignItems:'flex-start',width:'100%'}}>
-            <div style={{width:220}}>
-              <p style={{margin:'0 0 8px 0'}}>Drag an icon onto the map to place it:</p>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
-                {availableIcons.map((ic)=> (
-                  <img key={ic} src={ic} draggable onDragStart={(e)=>{e.dataTransfer.setData('application/x-icon', ic);}} style={{width:48,height:48,borderRadius:8,background:'#071826',padding:6}} alt="icon" />
-                ))}
+      {editing ? (
+        <div>
+          <div className="form-row">
+            <label style={{display:'block',marginBottom:6,color:'var(--text)'}}>Name</label>
+            <input className="input" placeholder="Name" value={form.name} onChange={(e)=>setForm({...form,name:e.target.value})} />
+          </div>
+
+          <div className="form-row">
+            <label style={{display:'block',marginBottom:6,color:'var(--text)'}}>Icon</label>
+            <select className="input" value={form.icon} onChange={(e)=>setForm({...form,icon:e.target.value})}>
+              {availableIcons.map((ic)=> {
+                const name = ic.split('/').pop().replace('marker_','').replace('.svg','');
+                return (<option key={ic} value={ic}>{name}</option>);
+              })}
+            </select>
+          </div>
+
+          <div className="form-row">
+            <label style={{display:'block',marginBottom:6,color:'var(--text)'}}>Description (NL)</label>
+            <textarea className="input" placeholder="Description (NL)" value={form.description.nl} onChange={(e)=>setForm({...form,description:{...form.description,nl:e.target.value}})} style={{minHeight:'80px'}} />
+          </div>
+
+          <div className="form-row">
+            <label style={{display:'block',marginBottom:6,color:'var(--text)'}}>Description (EN)</label>
+            <textarea className="input" placeholder="Description (EN)" value={form.description.en} onChange={(e)=>setForm({...form,description:{...form.description,en:e.target.value}})} style={{minHeight:'80px'}} />
+          </div>
+
+          <div className="form-row">
+            <label style={{display:'block',marginBottom:6,color:'var(--text)'}}>X positie op kaart</label>
+            <input className="input" value={form.x||''} readOnly />
+          </div>
+
+          <div className="form-row">
+            <label style={{display:'block',marginBottom:6,color:'var(--text)'}}>Y positie op kaart</label>
+            <input className="input" value={form.y||''} readOnly />
+          </div>
+
+          <div className="form-row">
+            <div style={{display:'flex',gap:12,alignItems:'flex-start',width:'100%'}}>
+              <div style={{width:220}}>
+                <p style={{margin:'0 0 8px 0'}}>Drag an icon onto the map to place it:</p>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+                  {availableIcons.map((ic)=> (
+                    <img key={ic} src={ic} draggable onDragStart={(e)=>{e.dataTransfer.setData('application/x-icon', ic);}} style={{width:48,height:48,borderRadius:8,background:'#071826',padding:6}} alt="icon" />
+                  ))}
+                </div>
+                <p style={{margin:'8px 0 0 0',fontSize:13,color:'var(--muted)'}}>After dropping, drag the preview to fine-tune position. Click Save to persist X/Y.</p>
               </div>
-              <p style={{margin:'8px 0 0 0',fontSize:13,color:'var(--muted)'}}>After dropping, drag the preview to fine-tune position. Click Save to persist X/Y.</p>
-            </div>
-            <div style={{flex:1,display:'flex',flexDirection:'column'}}>
-              <p style={{margin:0}}>Click or drop on the map to position this marker. Full SVG map is shown below:</p>
-              <div id="cms-map-canvas" style={{flex:1,minHeight:400,marginTop:8,borderRadius:12,overflow:'auto',background:'#071018',position:'relative'}} dangerouslySetInnerHTML={{__html:''}} />
+              <div style={{flex:1,display:'flex',flexDirection:'column'}}>
+                <p style={{margin:0}}>Click or drop on the map to position this marker. Full SVG map is shown below:</p>
+                <div id="cms-map-canvas" style={{flex:1,minHeight:400,marginTop:8,borderRadius:12,overflow:'auto',background:'#071018',position:'relative'}} dangerouslySetInnerHTML={{__html:''}} />
+              </div>
             </div>
           </div>
+
+          <div className="form-row"><button className="button" onClick={save}>Save</button> <button className="button ghost" onClick={()=>setEditing(null)}>Cancel</button></div>
         </div>
-        <div className="form-row"><button className="button" onClick={save}>Save</button> <button className="button ghost" onClick={()=>setEditing(null)}>Cancel</button></div>
-      </div>):null}
+      ) : null}
     </div>
   )
 }

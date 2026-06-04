@@ -18,6 +18,25 @@ export default function MapBottomSheet({ marker, stageEvent, onClose }) {
     ? marker.label
     : marker.label?.[i18n.language] || marker.label?.en || marker.name || marker.id;
 
+  // Resolve description to a localized string safely (handles object or JSON string)
+  const resolveDescription = (desc) => {
+    if (!desc) return null;
+    let d = desc;
+    if (typeof d === 'string') {
+      // try to parse JSON-encoded multilanguage strings
+      try {
+        const p = JSON.parse(d);
+        if (p && typeof p === 'object') d = p;
+      } catch (e) {
+        // not JSON, keep as-is
+      }
+    }
+    if (typeof d === 'object') {
+      return d[i18n.language] ?? d.nl ?? d.en ?? null;
+    }
+    return String(d);
+  };
+
   // Format countdown timer
   const formatTimeRemaining = (endTime) => {
     if (!endTime) return '';
@@ -183,17 +202,10 @@ export default function MapBottomSheet({ marker, stageEvent, onClose }) {
         {/* POI details */}
         {!isStage && (
           <div className="sheet-poi-details">
-            {marker.description && (
-              <p className="poi-description">
-                {typeof marker.description === 'object'
-                  ? marker.description[i18n.language] || marker.description.en || marker.description.nl || 'No information'
-                  : marker.description}
-              </p>
-            )}
-            {!marker.description && (
-              <p className="poi-description-empty">
-                {t('map.noInfo') || 'No additional information'}
-              </p>
+            {marker.description ? (
+              <p className="poi-description">{resolveDescription(marker.description) || (t('map.noInfo') || 'No additional information')}</p>
+            ) : (
+              <p className="poi-description-empty">{t('map.noInfo') || 'No additional information'}</p>
             )}
           </div>
         )}
