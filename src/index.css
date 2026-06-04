@@ -398,11 +398,113 @@ html[data-theme='dark'] .flag-button.active,
   gap: 1rem;
 }
 
+.schedule-shell {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.schedule-loading,
+.schedule-error {
+  padding: 1.25rem;
+  border-radius: 18px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-base);
+}
+
+.schedule-error {
+  background: rgba(240,50,40,0.08);
+  color: var(--color-primary);
+}
+
+.schedule-header-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.page-copy {
+  margin: 0.5rem 0 0;
+  color: var(--color-muted);
+  max-width: 45rem;
+}
+
+.schedule-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, auto));
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.filter-label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  color: var(--color-muted);
+}
+
+.schedule-empty-state {
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--color-muted);
+  background: rgba(240,50,40,0.05);
+  border-top: 1px solid var(--color-border);
+}
+
+.block-actions {
+  margin-top: 0.85rem;
+}
+
+.link-button {
+  background: transparent;
+  border: none;
+  color: var(--color-accent);
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+}
+
+.link-button:hover {
+  text-decoration: underline;
+}
+
 .schedule-tabs {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 0.85rem;
   margin-bottom: 0.9rem;
+}
+
+.schedule-header-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.schedule-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, auto));
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.filter-label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  color: var(--color-muted);
+}
+
+.schedule-empty-state {
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--color-muted);
+  background: rgba(240,50,40,0.05);
+  border-top: 1px solid var(--color-border);
 }
 
 .tab-button {

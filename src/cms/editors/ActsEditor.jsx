@@ -5,7 +5,7 @@ export default function ActsEditor() {
   const [acts, setActs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ name: '', genre:'', description: { nl:'', en:'' }, image_url: '' });
+  const [form, setForm] = useState({ name: '', slug:'', genre:'', youtube:'', description: { nl:'', en:'' }, image_url: '', lang:'en' });
   const [msg, setMsg] = useState(null);
 
   const load = () => {
@@ -33,8 +33,8 @@ export default function ActsEditor() {
     return { nl:'', en:'' };
   };
 
-  const onAdd = () => { setEditing('new'); setForm({ name:'', genre:'', description:{ nl:'', en:'' }, image_url:'' }); };
-  const onEdit = (a) => { setEditing(a.id); setForm({ name:a.name ?? '', genre:a.genre ?? '', description:normalizeDescription(a.description), image_url:a.image_url ?? '' }); };
+  const onAdd = () => { setEditing('new'); setForm({ name:'', slug:'', genre:'', youtube:'', description:{ nl:'', en:'' }, image_url:'', lang:'en' }); };
+  const onEdit = (a) => { setEditing(a.id); setForm({ name:a.name ?? '', slug:a.slug ?? '', genre:a.genre ?? '', youtube:a.youtube ?? '', description:normalizeDescription(a.description), image_url:a.image_url ?? '', lang:a.lang ?? 'en' }); };
 
   const save = async () => {
     try {
@@ -72,8 +72,11 @@ export default function ActsEditor() {
       {editing ? (
         <div>
           <div className="form-row"><input className="input" placeholder="Name" value={form.name} onChange={(e)=>setForm({...form,name:e.target.value})} /></div>
+          <div className="form-row"><input className="input" placeholder="Slug" value={form.slug} onChange={(e)=>setForm({...form,slug:e.target.value})} /></div>
           <div className="form-row"><input className="input" placeholder="Genre" value={form.genre} onChange={(e)=>setForm({...form,genre:e.target.value})} /></div>
+          <div className="form-row"><input className="input" placeholder="YouTube URL" value={form.youtube} onChange={(e)=>setForm({...form,youtube:e.target.value})} /></div>
           <div className="form-row"><input className="input" placeholder="Image URL" value={form.image_url} onChange={(e)=>setForm({...form,image_url:e.target.value})} /></div>
+          <div className="form-row"><label style={{minWidth:80,color:'var(--text)'}}>Language</label><select className="input" value={form.lang} onChange={(e)=>setForm({...form,lang:e.target.value})}><option value="en">English</option><option value="nl">Nederlands</option></select></div>
           <div className="form-row"><textarea className="input" placeholder="Description NL" value={form.description.nl} onChange={(e)=>setForm({...form,description:{...form.description,nl:e.target.value}})} /></div>
           <div className="form-row"><textarea className="input" placeholder="Description EN" value={form.description.en} onChange={(e)=>setForm({...form,description:{...form.description,en:e.target.value}})} /></div>
           <div className="form-row"><button className="button" onClick={save}>Save</button> <button className="button ghost" onClick={()=>setEditing(null)}>Cancel</button></div>

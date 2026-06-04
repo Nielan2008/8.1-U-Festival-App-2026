@@ -5,6 +5,7 @@ import Home from './pages/Home.jsx';
 import Info from './pages/Info.jsx';
 import Schedule from './pages/Schedule.jsx';
 import MapPage from './pages/Map.jsx';
+import ArtistPage from './pages/Artist.jsx';
 // CMS imports
 import { CmsAuthProvider } from './cms/CmsAuthContext.jsx';
 import ProtectedRoute from './cms/components/ProtectedRoute.jsx';
@@ -38,7 +39,9 @@ function AppShell() {
   }, []);
 
   useEffect(() => {
-    document.body.className = theme === 'dark' ? 'theme-dark' : 'theme-light';
+    const themeClass = theme === 'dark' ? 'theme-dark' : 'theme-light';
+    document.body.className = themeClass;
+    document.documentElement.dataset.theme = theme;
     window.localStorage.setItem('loveu-theme', theme);
   }, [theme]);
 
@@ -80,6 +83,7 @@ function AppShell() {
             <Route path="/info" element={<Info />} />
             <Route path="/schedule" element={<Schedule />} />
             <Route path="/map" element={<MapPage />} />
+            <Route path="/artist/:actId" element={<ArtistPage />} />
             {/* CMS routes */}
             <Route path="/cms" element={<Navigate to="/cms/login" replace />} />
             <Route path="/cms/login" element={<Login />} />

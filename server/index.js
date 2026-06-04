@@ -52,6 +52,22 @@ async function runMigrations() {
       await pool.query(sql);
       console.log('Migrations applied');
     }
+
+    const alterStatements = [
+      `ALTER TABLE acts ADD COLUMN IF NOT EXISTS tagline TEXT`,
+      `ALTER TABLE acts ADD COLUMN IF NOT EXISTS slug TEXT`,
+      `ALTER TABLE acts ADD COLUMN IF NOT EXISTS youtube TEXT`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS acts_slug_unique ON acts (slug)`,
+      `ALTER TABLE map_points ADD COLUMN IF NOT EXISTS x INTEGER`,
+      `ALTER TABLE map_points ADD COLUMN IF NOT EXISTS y INTEGER`,
+      `ALTER TABLE map_points ADD COLUMN IF NOT EXISTS icon TEXT`,
+      `ALTER TABLE map_points ADD COLUMN IF NOT EXISTS label_nl TEXT`,
+      `ALTER TABLE map_points ADD COLUMN IF NOT EXISTS label_en TEXT`
+    ];
+
+    for (const stmt of alterStatements) {
+      await pool.query(stmt);
+    }
   } catch (err) {
     console.error('Migration error', err);
   }
@@ -189,9 +205,11 @@ app.get('/api/acts', async (req, res) => {
 // PROTECTED
 app.post('/api/acts', requireAuth, async (req, res) => {
   try {
-    const { name, description, image_url, genre, lang } = req.body;
-    const q = 'INSERT INTO acts (name, description, image_url, genre, lang) VALUES ($1,$2,$3,$4,$5) RETURNING *';
-    const r = await pool.query(q, [name, description || '', image_url || null, genre || null, lang || 'en']);
+    const { name, slug, tagline, description, image_url, genre, lang, youtube } = req.body;
+    const safeDescription = typeof description === 'object' ? JSON.stringify(description) : description || '';
+    const safeTagline = typeof tagline === 'object' ? JSON.stringify(tagline) : tagline || '';
+    const q = 'INSERT INTO acts (name, slug, tagline, description, image_url, genre, lang, youtube) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *';
+    const r = await pool.query(q, [name, slug || null, safeTagline, safeDescription, image_url || null, genre || null, lang || 'en', youtube || null]);
     res.json(r.rows[0]);
   } catch (err) {
     res.status(500).json({ error: String(err) });
@@ -200,9 +218,11 @@ app.post('/api/acts', requireAuth, async (req, res) => {
 
 app.put('/api/acts/:id', requireAuth, async (req, res) => {
   try {
-    const { name, description, image_url, genre, lang } = req.body;
-    const q = 'UPDATE acts SET name=$1, description=$2, image_url=$3, genre=$4, lang=$5 WHERE id=$6 RETURNING *';
-    const r = await pool.query(q, [name, description || '', image_url || null, genre || null, lang || 'en', req.params.id]);
+    const { name, slug, tagline, description, image_url, genre, lang, youtube } = req.body;
+    const safeDescription = typeof description === 'object' ? JSON.stringify(description) : description || '';
+    const safeTagline = typeof tagline === 'object' ? JSON.stringify(tagline) : tagline || '';
+    const q = 'UPDATE acts SET name=$1, slug=$2, tagline=$3, description=$4, image_url=$5, genre=$6, lang=$7, youtube=$8 WHERE id=$9 RETURNING *';
+    const r = await pool.query(q, [name, slug || null, safeTagline, safeDescription, image_url || null, genre || null, lang || 'en', youtube || null, req.params.id]);
     res.json(r.rows[0]);
   } catch (err) {
     res.status(500).json({ error: String(err) });
@@ -233,9 +253,10 @@ app.get('/api/map', async (req, res) => {
 // PROTECTED
 app.post('/api/map', requireAuth, async (req, res) => {
   try {
-    const { name, lat, lng, type, description } = req.body;
-    const q = 'INSERT INTO map_points (name, lat, lng, type, description) VALUES ($1,$2,$3,$4,$5) RETURNING *';
-    const r = await pool.query(q, [name, lat, lng, type || null, description || null]);
+    const { name, lat, lng, type, label_nl, label_en, x, y, icon, description } = req.body;
+    const safeDescription = typeof description === 'object' ? JSON.stringify(description) : description || null;
+    const q = 'INSERT INTO map_points (name, lat, lng, type, label_nl, label_en, x, y, icon, description) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *';
+    const r = await pool.query(q, [name, lat || null, lng || null, type || null, label_nl || null, label_en || null, x || null, y || null, icon || null, safeDescription]);
     res.json(r.rows[0]);
   } catch (err) {
     res.status(500).json({ error: String(err) });
@@ -244,9 +265,10 @@ app.post('/api/map', requireAuth, async (req, res) => {
 
 app.put('/api/map/:id', requireAuth, async (req, res) => {
   try {
-    const { name, lat, lng, type, description } = req.body;
-    const q = 'UPDATE map_points SET name=$1, lat=$2, lng=$3, type=$4, description=$5 WHERE id=$6 RETURNING *';
-    const r = await pool.query(q, [name, lat, lng, type || null, description || null, req.params.id]);
+    const { name, lat, lng, type, label_nl, label_en, x, y, icon, description } = req.body;
+    const safeDescription = typeof description === 'object' ? JSON.stringify(description) : description || null;
+    const q = 'UPDATE map_points SET name=$1, lat=$2, lng=$3, type=$4, label_nl=$5, label_en=$6, x=$7, y=$8, icon=$9, description=$10 WHERE id=$11 RETURNING *';
+    const r = await pool.query(q, [name, lat || null, lng || null, type || null, label_nl || null, label_en || null, x || null, y || null, icon || null, safeDescription, req.params.id]);
     res.json(r.rows[0]);
   } catch (err) {
     res.status(500).json({ error: String(err) });

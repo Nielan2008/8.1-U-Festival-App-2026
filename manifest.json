@@ -4,6 +4,7 @@
   "description": "Mobile-first festival guide for ❤️U Festival in Utrecht.",
   "start_url": "/",
   "display": "standalone",
+  "scope": "/",
   "background_color": "#000000",
   "theme_color": "#F03228",
   "icons": [

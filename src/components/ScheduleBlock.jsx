@@ -1,4 +1,4 @@
-export default function ScheduleBlock({ stage, blocks, onSelect, favourites, toggleFavourite }) {
+export default function ScheduleBlock({ stage, blocks, onSelect, onOpenArtist, favourites, toggleFavourite }) {
   const startMinutes = 10 * 60;
   const totalMinutes = 14 * 60 + 45;
   const totalHeight = 900;
@@ -37,6 +37,11 @@ export default function ScheduleBlock({ stage, blocks, onSelect, favourites, tog
               <span className="block-stage">{stage}</span>
               <h3 className="block-title">{block.title}</h3>
               <p className="block-time">{block.start} – {block.end}</p>
+              <div className="block-actions">
+                <button type="button" className="link-button" onClick={(event) => { event.stopPropagation(); onOpenArtist?.(block); }}>
+                  Details
+                </button>
+              </div>
               <span
                 className={`heart-button ${isFav ? 'active' : ''}`}
                 onClick={(event) => {

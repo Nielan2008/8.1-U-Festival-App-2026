@@ -5,12 +5,12 @@ export default function InfoEditor(){
   const [items,setItems]=useState([]);
   const [loading,setLoading]=useState(true);
   const [editing,setEditing]=useState(null);
-  const [form,setForm]=useState({key:'',value:''});
+  const [form,setForm]=useState({key:'',value:'',lang:'en'});
   const [msg,setMsg]=useState(null);
   const load=()=>{setLoading(true);fetch('/api/info',{credentials:'include'}).then(r=>r.json()).then(setItems).catch(()=>setMsg({error:'Failed'})).finally(()=>setLoading(false))}
   useEffect(()=>{load()},[]);
-  const onAdd=()=>{setEditing('new');setForm({key:'',value:''})}
-  const onEdit=(it)=>{setEditing(it.id);setForm({key:it.key,value:it.value})}
+  const onAdd=()=>{setEditing('new');setForm({key:'',value:'',lang:'en'})}
+  const onEdit=(it)=>{setEditing(it.id);setForm({key:it.key,value:it.value,lang:it.lang||'en'})}
   const save=async()=>{try{const url=editing==='new'?'/api/info':`/api/info/${editing}`;const method=editing==='new'?'POST':'PUT';const r=await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(form),credentials:'include'});if(!r.ok)throw new Error('save failed');setMsg({success:'Saved'});setEditing(null);load()}catch(e){setMsg({error:String(e)})}}
   const del=async(id)=>{if(!window.confirm('Delete?'))return;await fetch(`/api/info/${id}`,{method:'DELETE',credentials:'include'});setMsg({success:'Deleted'});load()}
   return (
@@ -25,6 +25,7 @@ export default function InfoEditor(){
       )}
       {editing? (<div>
         <div className="form-row"><input className="input" placeholder="Key" value={form.key} onChange={(e)=>setForm({...form,key:e.target.value})} /></div>
+        <div className="form-row"><label style={{minWidth:80,color:'var(--text)'}}>Language</label><select className="input" value={form.lang} onChange={(e)=>setForm({...form,lang:e.target.value})}><option value="en">English</option><option value="nl">Nederlands</option></select></div>
         <div className="form-row"><textarea className="input" placeholder="Value(JSON or string)" value={form.value} onChange={(e)=>setForm({...form,value:e.target.value})} /></div>
         <div className="form-row"><button className="button" onClick={save}>Save</button> <button className="button ghost" onClick={()=>setEditing(null)}>Cancel</button></div>
       </div>):null}

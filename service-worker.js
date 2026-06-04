@@ -30,17 +30,25 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
 
-  if (ASSETS.includes(url.pathname) || url.pathname.endsWith('.json') || url.pathname.endsWith('.css') || url.pathname.endsWith('.js') || url.pathname.endsWith('.svg') || url.pathname.endsWith('.html')) {
+  const isNavigation = event.request.mode === 'navigate';
+  const isStaticAsset = ASSETS.includes(url.pathname) || url.pathname.endsWith('.json') || url.pathname.endsWith('.css') || url.pathname.endsWith('.js') || url.pathname.endsWith('.svg') || url.pathname.endsWith('.html');
+
+  if (isStaticAsset || isNavigation) {
     event.respondWith(
       caches.match(event.request).then((cached) => {
         const fetchPromise = fetch(event.request)
           .then((response) => {
-            if (response.ok) {
+            if (response.ok && !isNavigation) {
               caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
             }
             return response;
           })
-          .catch(() => cached);
+          .catch(() => {
+            if (isNavigation) {
+              return caches.match('/');
+            }
+            return cached;
+          });
 
         return cached || fetchPromise;
       })

@@ -20,12 +20,24 @@
   },
   "schedule": {
     "title": "Block schedule",
+    "pageDescription": "Browse the full festival programme and save your favourites.",
     "tabs": {
       "sat": "Saturday",
       "sun": "Sunday"
     },
     "favourite": "Favourite",
     "noEvents": "No events in this slot.",
+    "filterGenre": "Genre",
+    "filterTime": "Time range",
+    "filterFavourites": "Show favourites",
+    "filterAll": "All",
+    "filterAny": "Any time",
+    "filterMorning": "Morning",
+    "filterAfternoon": "Afternoon",
+    "filterEvening": "Evening",
+    "loading": "Loading schedule…",
+    "loadError": "Unable to load the schedule.",
+    "notificationsBlocked": "Notifications permission was blocked.",
     "currentLocation": "Current location",
     "nextUp": "Next"
   },
@@ -53,5 +65,14 @@
   "home": {
     "welcomeTitle": "Welcome to ❤️U Festival",
     "welcomeText": "16 hours of music, art and food in Utrecht on 15–16 August 2026."
+  },
+  "artist": {
+    "loading": "Loading artist…",
+    "notFound": "Artist not found.",
+    "loadError": "Unable to load artist details.",
+    "stage": "Stage",
+    "time": "Time",
+    "genre": "Genre",
+    "about": "About"
   }
 }

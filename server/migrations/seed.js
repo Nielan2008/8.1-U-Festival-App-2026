@@ -16,10 +16,14 @@ async function seed() {
       const actsFile = path.join(base, 'acts.json');
       if (fs.existsSync(actsFile)) {
         const acts = JSON.parse(fs.readFileSync(actsFile, 'utf8')) || {};
-        const entries = Array.isArray(acts) ? acts : Object.values(acts);
-        for (const a of entries) {
-          const q = `INSERT INTO acts (name, description, image_url, genre, lang) VALUES ($1,$2,$3,$4,$5)`;
-          await pool.query(q, [a.name || a.title || '', a.description || '', a.image || a.image_url || null, a.genre || null, a.lang || 'en']);
+        const entries = Array.isArray(acts)
+          ? acts.map((a) => [a.slug || a.id || a.name || '', a])
+          : Object.entries(acts);
+        for (const [slug, a] of entries) {
+          const q = `INSERT INTO acts (name, slug, tagline, description, image_url, genre, lang, youtube) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`;
+          const description = typeof a.description === 'object' ? JSON.stringify(a.description) : a.description || '';
+          const tagline = typeof a.tagline === 'object' ? JSON.stringify(a.tagline) : a.tagline || '';
+          await pool.query(q, [a.name || a.title || '', slug || null, tagline, description, a.image || a.image_url || null, a.genre || null, a.lang || 'en', a.youtube || a.video || null]);
           console.log('inserted act', a.name || a.title);
         }
       }
@@ -81,8 +85,22 @@ if (!(await tableHasRows('info'))) {
         const m = JSON.parse(fs.readFileSync(mapFile, 'utf8')) || { locations: [] };
         const locations = m.locations || m;
         for (const loc of locations) {
-          await pool.query(`INSERT INTO map_points (name, lat, lng, type, description) VALUES ($1,$2,$3,$4,$5)`, [loc.label?.en || loc.label || loc.id || null, loc.lat || loc.latitude || null, loc.lng || loc.longitude || null, loc.type || null, loc.info || null]);
-          console.log('inserted map', loc.id || loc.label);
+          const labelNl = loc.label?.nl || loc.name || loc.label || '';
+          const labelEn = loc.label?.en || loc.name || loc.label || '';
+          const description = JSON.stringify({ nl: loc.info || '', en: loc.info || '' });
+          await pool.query(`INSERT INTO map_points (name, label_nl, label_en, lat, lng, x, y, icon, type, description) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`, [
+            labelEn || loc.id || null,
+            labelNl || null,
+            labelEn || null,
+            loc.lat || loc.latitude || null,
+            loc.lng || loc.longitude || null,
+            loc.x || null,
+            loc.y || null,
+            loc.icon || '/marker_stage1_ponton.svg',
+            loc.type || null,
+            description
+          ]);
+          console.log('inserted map', loc.id || labelEn);
         }
       }
     }
@@ -97,8 +115,10 @@ if (!(await tableHasRows('info'))) {
           for (const g of groups) {
             const acts = g.acts || [];
             for (const a of acts) {
-              // insert schedule row; act linking skipped if not available
-              await pool.query(`INSERT INTO schedule (act_id, stage, day, start_time, end_time) VALUES ($1,$2,$3,$4,$5)`, [null, g.stage || null, day, a.start || a.start_time || null, a.end || a.end_time || null]);
+              const actSlug = a.id || a.title || null;
+              const actResult = await pool.query('SELECT id FROM acts WHERE slug=$1 OR name=$2 LIMIT 1', [actSlug, a.title || null]);
+              const actId = actResult.rows[0]?.id || null;
+              await pool.query(`INSERT INTO schedule (act_id, stage, day, start_time, end_time) VALUES ($1,$2,$3,$4,$5)`, [actId, g.stage || null, day, a.start || a.start_time || null, a.end || a.end_time || null]);
               console.log('inserted schedule row for', a.title || a.id || 'unknown');
             }
           }

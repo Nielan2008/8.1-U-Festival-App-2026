@@ -20,12 +20,24 @@
   },
   "schedule": {
     "title": "Blokkenschema",
+    "pageDescription": "Bekijk het volledige festivalprogramma en bewaar je favorieten.",
     "tabs": {
       "sat": "Zaterdag",
       "sun": "Zondag"
     },
     "favourite": "Favoriet",
     "noEvents": "Geen evenementen in deze fase.",
+    "filterGenre": "Genre",
+    "filterTime": "Tijd",
+    "filterFavourites": "Favorieten tonen",
+    "filterAll": "Alles",
+    "filterAny": "Elke tijd",
+    "filterMorning": "Ochtend",
+    "filterAfternoon": "Middag",
+    "filterEvening": "Avond",
+    "loading": "Schema laden…",
+    "loadError": "Schema kan niet worden geladen.",
+    "notificationsBlocked": "Meldingen zijn geblokkeerd.",
     "currentLocation": "Huidige positie",
     "nextUp": "Volgende"
   },
@@ -53,5 +65,14 @@
   "home": {
     "welcomeTitle": "Welkom bij ❤️U Festival",
     "welcomeText": "16 uur muziek, kunst en eten in Utrecht op 15–16 augustus 2026."
+  },
+  "artist": {
+    "loading": "Artiest laden…",
+    "notFound": "Artiest niet gevonden.",
+    "loadError": "Kan artiestgegevens niet laden.",
+    "stage": "Podium",
+    "time": "Tijd",
+    "genre": "Genre",
+    "about": "Over"
   }
 }

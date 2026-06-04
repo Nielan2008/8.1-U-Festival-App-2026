@@ -9,10 +9,8 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS acts (
   id SERIAL PRIMARY KEY,
   name VARCHAR(200) NOT NULL,
-  stage VARCHAR(100),
-  day VARCHAR(50),
-  start_time VARCHAR(20),
-  end_time VARCHAR(20),
+  slug VARCHAR(200) UNIQUE,
+  tagline TEXT,
   description TEXT,
   image_url TEXT,
   genre VARCHAR(100),
@@ -47,8 +45,13 @@ CREATE TABLE IF NOT EXISTS info (
 CREATE TABLE IF NOT EXISTS map_points (
   id SERIAL PRIMARY KEY,
   name VARCHAR(200),
+  label_nl TEXT,
+  label_en TEXT,
   lat DECIMAL(10,7),
   lng DECIMAL(10,7),
+  x INTEGER,
+  y INTEGER,
+  icon TEXT,
   type VARCHAR(100),
   description TEXT
 );

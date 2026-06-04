@@ -3,19 +3,6 @@ import MapSVG from '../components/MapSVG.jsx';
 import { useTranslation } from 'react-i18next';
 import { localize } from '../utils/dataStore.js';
 
-const festivalStart = new Date('2026-08-15T00:00:00');
-
-function CurrentLocationMarker({ position }) {
-  const icon = L.divIcon({
-    className: 'live-dot-icon',
-    html: '<span></span>',
-    iconSize: [18, 18],
-    iconAnchor: [9, 9]
-  });
-
-  return position ? <Marker position={[position.lat, position.lng]} icon={icon} /> : null;
-}
-
 export default function MapPage() {
   const { i18n, t } = useTranslation();
   const [position, setPosition] = useState(null);
@@ -25,9 +12,7 @@ export default function MapPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
   const watchRef = useRef(null);
-  const mapRef = useRef(null);
   const mapSvgRef = useRef(null);
-  const center = [51.9845, 5.0540];
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -136,7 +121,7 @@ export default function MapPage() {
   }, [locations, scheduleData, i18n.language]);
 
   const centerOnCurrent = () => {
-    if (!(typeof navigator !== 'undefined' && navigator.geolocation) || !mapRef.current) return;
+    if (!(typeof navigator !== 'undefined' && navigator.geolocation)) return;
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };

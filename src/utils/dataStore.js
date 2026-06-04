@@ -48,6 +48,16 @@ export function getSavedData(name) {
 
 export function localize(value, lang) {
   if (value == null) return '';
-  if (typeof value === 'string') return value;
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      if (parsed && typeof parsed === 'object') {
+        return parsed[lang] || parsed.en || Object.values(parsed)[0] || '';
+      }
+    } catch {
+      return value;
+    }
+    return value;
+  }
   return value[lang] || value.en || Object.values(value)[0] || '';
 }
